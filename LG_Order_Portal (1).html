@@ -1,0 +1,1440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Order Portal — Spares Distribution</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --border2: #cccab8;
+    --text: #1a1916;
+    --text2: #6b6960;
+    --text3: #9e9c93;
+    --accent: #1a6b3c;
+    --accent-light: #e8f5ee;
+    --accent-border: #a8d5bb;
+    --warn: #b84a00;
+    --warn-light: #fff0e8;
+    --warn-border: #f0b894;
+    --info: #1a4a8a;
+    --info-light: #e8f0fa;
+    --info-border: #a8c0e8;
+    --danger: #991a1a;
+    --danger-light: #faeaea;
+    --radius: 10px;
+    --radius-sm: 6px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 4px 12px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* HEADER */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 0 16px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: var(--shadow);
+  }
+  .header-brand {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    color: var(--text);
+  }
+  .header-brand span { color: var(--accent); }
+  .role-badge {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 3px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    border: 1px solid var(--border2);
+    background: var(--surface2);
+    color: var(--text2);
+    display: flex; align-items: center; gap: 6px;
+  }
+
+  /* NAV TABS */
+  .nav {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    padding: 0 16px;
+    gap: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+  }
+  .nav::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    padding: 12px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text3);
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.15s;
+  }
+  .nav-tab:hover { color: var(--text2); }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .nav-tab .badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    background: var(--accent); color: white;
+    font-size: 10px; font-weight: 600;
+    width: 16px; height: 16px; border-radius: 50%;
+    margin-left: 6px;
+  }
+
+  /* MAIN */
+  .main { padding: 16px; max-width: 800px; margin: 0 auto; }
+
+  /* CARDS */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    margin-bottom: 12px;
+  }
+  .card-header {
+    padding: 14px 16px 10px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .card-title { font-size: 13px; font-weight: 600; }
+  .card-body { padding: 16px; }
+
+  /* FORM ELEMENTS */
+  label { font-size: 12px; font-weight: 500; color: var(--text2); display: block; margin-bottom: 5px; }
+  input, select, textarea {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--border2);
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--text);
+    background: var(--surface);
+    outline: none;
+    transition: border-color 0.15s;
+    -webkit-appearance: none;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(26,107,60,0.08);
+  }
+  .form-group { margin-bottom: 14px; }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  /* BUTTONS */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 9px 16px;
+    border-radius: var(--radius-sm);
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: all 0.15s;
+    white-space: nowrap;
+  }
+  .btn-primary { background: var(--accent); color: white; border-color: var(--accent); }
+  .btn-primary:hover { background: #155830; }
+  .btn-secondary { background: var(--surface2); color: var(--text); border-color: var(--border2); }
+  .btn-secondary:hover { background: var(--border); }
+  .btn-danger { background: var(--danger-light); color: var(--danger); border-color: #f0b8b8; }
+  .btn-danger:hover { background: #f5d0d0; }
+  .btn-sm { padding: 6px 12px; font-size: 12px; }
+  .btn-icon { padding: 7px; border-radius: var(--radius-sm); background: var(--surface2); border: 1px solid var(--border); cursor: pointer; color: var(--text2); font-size: 15px; line-height: 1; }
+  .btn-icon:hover { background: var(--border); color: var(--text); }
+  .btn-full { width: 100%; }
+
+  /* STATUS PILLS */
+  .status {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 3px 10px; border-radius: 20px;
+    font-size: 11px; font-weight: 500;
+  }
+  .status::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: currentColor; opacity: 0.7; }
+  .status-pending { background: var(--info-light); color: var(--info); }
+  .status-processing { background: var(--warn-light); color: var(--warn); }
+  .status-ready { background: var(--accent-light); color: var(--accent); }
+  .status-dispatched { background: #f0f0f0; color: #555; }
+  .status-billed { background: #2a2a2a; color: #fff; }
+  .status-billed::before { background: #fff; }
+
+  /* ORDER ITEMS TABLE */
+  .items-table { width: 100%; border-collapse: collapse; }
+  .items-table th {
+    text-align: left; font-size: 11px; font-weight: 500; color: var(--text3);
+    padding: 8px 10px; border-bottom: 1px solid var(--border);
+    background: var(--surface2);
+  }
+  .items-table td {
+    padding: 10px; border-bottom: 1px solid var(--border);
+    vertical-align: middle;
+  }
+  .items-table tr:last-child td { border-bottom: none; }
+  .items-table .product-name { font-size: 13px; font-weight: 500; }
+  .items-table .strikethrough { text-decoration: line-through; color: var(--text3); font-size: 12px; }
+
+  /* ORDER LIST ITEM */
+  .order-item {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    transition: background 0.1s;
+    display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+  }
+  .order-item:last-child { border-bottom: none; }
+  .order-item:hover { background: var(--surface2); }
+  .order-number { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text3); margin-bottom: 3px; }
+  .order-party { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .order-meta { font-size: 12px; color: var(--text2); }
+  .order-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+
+  /* SEARCH BOX */
+  .search-wrap { position: relative; }
+  .search-wrap input { padding-left: 34px; }
+  .search-icon { position: absolute; left: 10px; top: 50%; transform: translateY(-50%); color: var(--text3); font-size: 16px; pointer-events: none; }
+
+  /* AUTOCOMPLETE */
+  .autocomplete-wrap { position: relative; }
+  .autocomplete-list {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: var(--surface); border: 1px solid var(--border2);
+    border-radius: var(--radius-sm); box-shadow: var(--shadow-md);
+    z-index: 200; max-height: 240px; overflow-y: auto;
+  }
+  .autocomplete-item {
+    padding: 10px 12px; cursor: pointer; font-size: 13px;
+    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .autocomplete-item:last-child { border-bottom: none; }
+  .autocomplete-item:hover, .autocomplete-item.selected { background: var(--accent-light); }
+  .autocomplete-add {
+    padding: 10px 12px; cursor: pointer; font-size: 13px;
+    color: var(--accent); font-weight: 500;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .autocomplete-add:hover { background: var(--accent-light); }
+
+  /* PHOTO UPLOAD */
+  .photo-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 4px 10px; border-radius: var(--radius-sm);
+    font-size: 11px; font-weight: 500; cursor: pointer;
+    border: 1px dashed var(--border2); background: var(--surface2);
+    color: var(--text2); transition: all 0.15s;
+  }
+  .photo-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-light); }
+  .photo-btn.has-photo { border-style: solid; border-color: var(--accent-border); background: var(--accent-light); color: var(--accent); }
+  .photo-thumb { width: 32px; height: 32px; border-radius: 4px; object-fit: cover; cursor: pointer; border: 1px solid var(--border); }
+
+  /* INLINE EDIT */
+  .inline-input {
+    padding: 5px 8px; font-size: 13px;
+    border: 1px solid var(--border2); border-radius: var(--radius-sm);
+    font-family: 'DM Mono', monospace; font-weight: 500;
+    width: 80px; text-align: right;
+  }
+  .inline-input:focus { border-color: var(--accent); outline: none; }
+
+  /* EMPTY STATE */
+  .empty {
+    text-align: center; padding: 48px 24px;
+    color: var(--text3); font-size: 14px;
+  }
+  .empty-icon { font-size: 36px; margin-bottom: 12px; }
+  .empty-title { font-size: 15px; font-weight: 600; color: var(--text2); margin-bottom: 6px; }
+
+  /* MODAL */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    z-index: 500; display: flex; align-items: flex-end;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface); width: 100%; max-height: 90vh;
+    border-radius: 16px 16px 0 0; overflow-y: auto;
+    transform: translateY(100%); transition: transform 0.25s ease;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  @media (min-width: 600px) {
+    .modal-overlay { align-items: center; justify-content: center; }
+    .modal { max-width: 560px; border-radius: var(--radius); max-height: 85vh; }
+  }
+  .modal-header {
+    padding: 16px; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    position: sticky; top: 0; background: var(--surface); z-index: 1;
+  }
+  .modal-title { font-size: 15px; font-weight: 600; }
+  .modal-body { padding: 16px; }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%) translateY(80px);
+    background: var(--text); color: white;
+    padding: 10px 18px; border-radius: 20px;
+    font-size: 13px; font-weight: 500;
+    z-index: 999; transition: transform 0.3s ease;
+    white-space: nowrap; box-shadow: var(--shadow-md);
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  /* SETUP SCREEN */
+  .setup-screen {
+    min-height: 100vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 24px;
+    background: var(--bg);
+  }
+  .setup-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 32px 24px;
+    width: 100%; max-width: 420px;
+    box-shadow: var(--shadow-md);
+  }
+  .setup-logo { font-size: 22px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.5px; }
+  .setup-logo span { color: var(--accent); }
+  .setup-sub { font-size: 13px; color: var(--text2); margin-bottom: 28px; }
+  .setup-step { display: flex; gap: 12px; margin-bottom: 20px; }
+  .step-num {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-size: 11px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .step-text { font-size: 13px; line-height: 1.6; color: var(--text2); }
+  .step-text strong { color: var(--text); }
+  .step-text a { color: var(--accent); text-decoration: none; }
+  .step-text a:hover { text-decoration: underline; }
+  .setup-input-wrap { margin: 20px 0; }
+  .divider { display: flex; align-items: center; gap: 10px; margin: 20px 0; color: var(--text3); font-size: 12px; }
+  .divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+  /* ROLE SELECTOR */
+
+  .ws-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--border); color: var(--text3);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.25s;
+  }
+  .ws-dot.active { background: var(--accent); color: white; }
+  .ws-dot.done { background: var(--accent-light); color: var(--accent); }
+  .role-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .role-option {
+    padding: 14px 12px; border-radius: var(--radius);
+    border: 2px solid var(--border); cursor: pointer;
+    text-align: center; transition: all 0.15s;
+    background: var(--surface2);
+  }
+  .role-option:hover { border-color: var(--accent-border); }
+  .role-option.selected { border-color: var(--accent); background: var(--accent-light); }
+  .role-option .role-icon { font-size: 22px; margin-bottom: 6px; }
+  .role-option .role-label { font-size: 12px; font-weight: 600; }
+  .role-option .role-desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+
+  /* MISC */
+  .text-mono { font-family: 'DM Mono', monospace; }
+  .text-sm { font-size: 12px; }
+  .text-muted { color: var(--text2); }
+  .text-danger { color: var(--danger); }
+  .text-success { color: var(--accent); }
+  .flex { display: flex; }
+  .flex-between { display: flex; align-items: center; justify-content: space-between; }
+  .gap-8 { gap: 8px; }
+  .gap-6 { gap: 6px; }
+  .mt-8 { margin-top: 8px; }
+  .mt-12 { margin-top: 12px; }
+  .mt-16 { margin-top: 16px; }
+  .hidden { display: none !important; }
+
+  .filter-bar { display: flex; gap: 8px; margin-bottom: 12px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; }
+  .filter-bar::-webkit-scrollbar { display: none; }
+  .filter-pill {
+    padding: 5px 14px; border-radius: 20px;
+    font-size: 12px; font-weight: 500; white-space: nowrap;
+    border: 1px solid var(--border2); background: var(--surface);
+    color: var(--text2); cursor: pointer; transition: all 0.15s;
+  }
+  .filter-pill.active { background: var(--accent); color: white; border-color: var(--accent); }
+
+  .action-bar {
+    padding: 12px 16px; background: var(--surface2);
+    border-top: 1px solid var(--border);
+    display: flex; gap: 8px; align-items: center;
+    border-radius: 0 0 var(--radius) var(--radius);
+  }
+
+  .qty-edit-wrap { display: flex; flex-direction: column; gap: 2px; }
+
+  /* IMAGE PREVIEW */
+  .img-preview-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85);
+    z-index: 1000; display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+  }
+  .img-preview-overlay img { max-width: 90vw; max-height: 85vh; border-radius: 8px; }
+
+  .note-row { background: #fffce8; border-left: 3px solid #f0c940; padding: 10px 14px; border-radius: 0 6px 6px 0; font-size: 12px; color: #664a00; }
+
+  @media (max-width: 480px) {
+    .form-row { grid-template-columns: 1fr; }
+  
+  .ws-dot {
+    width: 22px; height: 22px; border-radius: 50%;
+    background: var(--border); color: var(--text3);
+    font-size: 11px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.25s;
+  }
+  .ws-dot.active { background: var(--accent); color: white; }
+  .ws-dot.done { background: var(--accent-light); color: var(--accent); }
+  .role-grid { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SETUP SCREEN -->
+<div id="setupScreen" class="setup-screen">
+  <div class="setup-card">
+    <div class="setup-logo">Spares <span>Portal</span></div>
+    <div class="setup-sub">Order management for your distribution business</div>
+
+    <div id="setupStep1">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:18px;">First, connect to your Google Sheet where orders will be saved.</p>
+
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-text">
+          Go to <a href="https://sheets.google.com" target="_blank">sheets.google.com</a> and create a new spreadsheet named <strong>Spares Orders</strong>
+        </div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-text">
+          Copy the spreadsheet ID from the URL. It looks like:<br>
+          <code style="background:var(--surface2);padding:3px 6px;border-radius:4px;font-size:11px;font-family:monospace">docs.google.com/spreadsheets/d/<strong style="color:var(--accent)">THIS_PART</strong>/edit</code>
+        </div>
+      </div>
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-text">
+          Go to <strong>Extensions → Apps Script</strong> in your sheet, paste the script below, and deploy it as a Web App (anyone, execute as me).
+        </div>
+      </div>
+
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:6px;padding:10px;margin:10px 0;">
+        <div class="flex-between" style="margin-bottom:6px;">
+          <span style="font-size:11px;font-weight:600;color:var(--text3)">APPS SCRIPT CODE</span>
+          <button class="btn btn-sm btn-secondary" onclick="copyScript()">Copy</button>
+        </div>
+        <pre id="scriptCode" style="font-size:10px;overflow-x:auto;color:var(--text2);white-space:pre-wrap;line-height:1.5">function doPost(e){
+  var ss=SpreadsheetApp.getActiveSpreadsheet();
+  var data=JSON.parse(e.postData.contents);
+  var action=data.action;
+  if(action==='saveOrder'){
+    var os=ss.getSheetByName('Orders')||ss.insertSheet('Orders');
+    if(os.getLastRow()===0)os.appendRow(['ID','Party','Date','Status','Note','CreatedBy']);
+    os.appendRow([data.id,data.party,data.date,data.status,data.note||'',data.createdBy||'']);
+    var is=ss.getSheetByName('Items')||ss.insertSheet('Items');
+    if(is.getLastRow()===0)is.appendRow(['OrderID','Product','OrigQty','FinalQty','Price','PhotoURL','Deleted']);
+    data.items.forEach(function(it){
+      is.appendRow([data.id,it.product,it.qty,it.qty,it.price||'','','']);
+    });
+    return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+  }
+  if(action==='updateOrder'){
+    var os=ss.getSheetByName('Orders');
+    var d=os.getDataRange().getValues();
+    for(var i=1;i<d.length;i++){if(d[i][0]==data.id){os.getRange(i+1,4).setValue(data.status);if(data.note!==undefined)os.getRange(i+1,5).setValue(data.note);break;}}
+    if(data.items){
+      var is=ss.getSheetByName('Items');
+      var id2=is.getDataRange().getValues();
+      for(var i=1;i<id2.length;i++){
+        if(id2[i][0]==data.id){
+          var upd=data.items.find(function(x){return x.product===id2[i][1];});
+          if(upd){is.getRange(i+1,4).setValue(upd.finalQty);is.getRange(i+1,5).setValue(upd.price||'');is.getRange(i+1,7).setValue(upd.deleted?'YES':'');}
+        }
+      }
+    }
+    return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+  }
+  if(action==='getOrders'){
+    var os=ss.getSheetByName('Orders');
+    var is=ss.getSheetByName('Items');
+    if(!os)return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+    var od=os.getDataRange().getValues();
+    var id2=is?is.getDataRange().getValues():[];
+    var orders=[];
+    for(var i=1;i<od.length;i++){
+      var items=[];
+      for(var j=1;j<id2.length;j++){if(id2[j][0]==od[i][0])items.push({product:id2[j][1],qty:id2[j][2],finalQty:id2[j][3],price:id2[j][4],photoURL:id2[j][5],deleted:id2[j][6]==='YES'});}
+      orders.push({id:od[i][0],party:od[i][1],date:od[i][2],status:od[i][3],note:od[i][4],createdBy:od[i][5],items:items});
+    }
+    return ContentService.createTextOutput(JSON.stringify(orders)).setMimeType(ContentService.MimeType.JSON);
+  }
+  if(action==='getParties'){
+    var ps=ss.getSheetByName('Parties')||ss.insertSheet('Parties');
+    if(ps.getLastRow()===0)ps.appendRow(['Name']);
+    var d=ps.getDataRange().getValues();
+    var parties=[];for(var i=1;i<d.length;i++)if(d[i][0])parties.push(d[i][0]);
+    return ContentService.createTextOutput(JSON.stringify(parties)).setMimeType(ContentService.MimeType.JSON);
+  }
+  if(action==='addParty'){
+    var ps=ss.getSheetByName('Parties')||ss.insertSheet('Parties');
+    if(ps.getLastRow()===0)ps.appendRow(['Name']);
+    ps.appendRow([data.name]);
+    return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+  }
+  if(action==='getProducts'){
+    var prs=ss.getSheetByName('Products');
+    if(!prs)return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
+    var d=prs.getDataRange().getValues();
+    var products=[];for(var i=0;i<d.length;i++)if(d[i][0])products.push(d[i][0]);
+    return ContentService.createTextOutput(JSON.stringify(products)).setMimeType(ContentService.MimeType.JSON);
+  }
+  return ContentService.createTextOutput(JSON.stringify({ok:false})).setMimeType(ContentService.MimeType.JSON);
+}
+function doGet(e){return doPost(e);}</pre>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">4</div>
+        <div class="step-text">
+          After deploying, paste the Web App URL below.
+        </div>
+      </div>
+
+      <div class="setup-input-wrap">
+        <label>Google Apps Script Web App URL</label>
+        <input type="text" id="scriptUrl" placeholder="https://script.google.com/macros/s/.../exec" />
+      </div>
+
+      <button class="btn btn-primary btn-full" onclick="saveScriptUrl()">Save & Continue →</button>
+
+      <div class="divider">or</div>
+      <button class="btn btn-secondary btn-full" onclick="useDemoMode()">Try demo mode (no Google Sheet)</button>
+    </div>
+  </div>
+</div>
+
+<!-- ROLE PICKER MODAL -->
+<div id="roleModal" class="modal-overlay">
+  <div class="modal" style="max-height:unset;border-radius:16px;padding:24px;max-width:400px;">
+    <div style="font-size:15px;font-weight:600;margin-bottom:6px;">Who are you?</div>
+    <div style="font-size:13px;color:var(--text2);margin-bottom:20px;">This controls what you can see and do.</div>
+    <div class="role-grid">
+      <div class="role-option" onclick="selectRole('sales')">
+        <div class="role-icon">📋</div>
+        <div class="role-label">Sales</div>
+        <div class="role-desc">Create orders</div>
+      </div>
+      <div class="role-option" onclick="selectRole('warehouse')">
+        <div class="role-icon">📦</div>
+        <div class="role-label">Warehouse</div>
+        <div class="role-desc">Pick & adjust qty</div>
+      </div>
+      <div class="role-option" onclick="selectRole('accountant')">
+        <div class="role-icon">🧾</div>
+        <div class="role-label">Accountant</div>
+        <div class="role-desc">View & bill orders</div>
+      </div>
+      <div class="role-option" onclick="selectRole('admin')">
+        <div class="role-icon">⚙️</div>
+        <div class="role-label">Admin</div>
+        <div class="role-desc">Full access</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP (hidden until setup done) -->
+<div id="mainApp" class="hidden">
+
+  <div class="header">
+    <div class="header-brand">Spares <span>Portal</span></div>
+    <div class="role-badge" onclick="showRolePicker()" title="Switch role">
+      <span id="roleIcon"></span>
+      <span id="roleName"></span>
+      <span style="font-size:10px;opacity:.5">▼</span>
+    </div>
+  </div>
+
+  <div class="nav">
+    <div class="nav-tab active" onclick="showTab('orders')" id="tab-orders">Orders <span class="badge" id="pendingBadge" style="display:none">0</span></div>
+    <div class="nav-tab" onclick="showTab('new')" id="tab-new" style="display:none">+ New Order</div>
+    <div class="nav-tab" onclick="showTab('products')" id="tab-products" style="display:none">Products</div>
+  </div>
+
+  <div class="main">
+
+    <!-- ORDERS TAB -->
+    <div id="view-orders">
+      <div class="filter-bar" id="filterBar">
+        <div class="filter-pill active" onclick="filterOrders('all',this)">All</div>
+        <div class="filter-pill" onclick="filterOrders('pending',this)">Pending</div>
+        <div class="filter-pill" onclick="filterOrders('ready',this)">Ready</div>
+        <div class="filter-pill" onclick="filterOrders('dispatched',this)">Dispatched</div>
+      </div>
+
+      <div class="card">
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search by party name..." oninput="searchOrders(this.value)" style="font-size:13px;" />
+          </div>
+        </div>
+        <div id="ordersList"></div>
+      </div>
+
+      <button class="btn btn-primary btn-full mt-12" id="fabNewOrder" onclick="showTab('new')" style="display:none">+ New Order</button>
+    </div>
+
+    <!-- NEW ORDER TAB -->
+    <div id="view-new" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">New Order</div>
+          <div id="orderDateDisplay" class="text-mono text-sm text-muted"></div>
+        </div>
+        <div class="card-body">
+          <div class="form-group">
+            <label>Party Name</label>
+            <div class="autocomplete-wrap">
+              <input type="text" id="partyInput" placeholder="Type to search or add new..." autocomplete="off" oninput="searchParties(this.value)" onblur="hidePartyList()" />
+              <div class="autocomplete-list hidden" id="partyList"></div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>Note (optional)</label>
+            <input type="text" id="orderNote" placeholder="Any special instructions..." />
+          </div>
+        </div>
+      </div>
+
+      <!-- Items being added -->
+      <div class="card" id="itemsCard">
+        <div class="card-header">
+          <div class="card-title">Items <span id="itemCount" style="font-weight:400;color:var(--text3)">(0)</span></div>
+        </div>
+        <div id="itemsTable">
+          <table class="items-table" id="newItemsTable" style="display:none">
+            <thead>
+              <tr>
+                <th style="width:40%">Product</th>
+                <th style="width:15%;text-align:right">Qty</th>
+                <th style="width:20%;text-align:right">Price</th>
+                <th style="width:15%;text-align:center">Photo</th>
+                <th style="width:10%"></th>
+              </tr>
+            </thead>
+            <tbody id="newItemsBody"></tbody>
+          </table>
+          <div id="itemsEmpty" style="padding:16px;text-align:center;color:var(--text3);font-size:13px;">No items added yet</div>
+        </div>
+
+        <div style="padding:12px 16px;border-top:1px solid var(--border);">
+          <div class="autocomplete-wrap">
+            <input type="text" id="productSearch" placeholder="Search product to add..." autocomplete="off" oninput="searchProducts(this.value)" onblur="hideProdList()" />
+            <div class="autocomplete-list hidden" id="productList"></div>
+          </div>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <button class="btn btn-secondary" onclick="cancelNewOrder()">Cancel</button>
+        <button class="btn btn-primary" style="flex:1" onclick="submitOrder()">Submit Order →</button>
+      </div>
+    </div>
+
+    <!-- PRODUCTS TAB (admin only) -->
+    <div id="view-products" class="hidden">
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title">Product List</div>
+          <span class="text-sm text-muted" id="prodCount"></span>
+        </div>
+        <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
+          <div class="search-wrap">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search products..." oninput="filterProductList(this.value)" style="font-size:13px;" />
+          </div>
+        </div>
+        <div id="productListView" style="max-height:500px;overflow-y:auto;"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ORDER DETAIL MODAL -->
+<div id="orderModal" class="modal-overlay">
+  <div class="modal">
+    <div class="modal-header">
+      <div>
+        <div class="modal-title" id="modalPartyName"></div>
+        <div style="font-size:11px;font-family:monospace;color:var(--text3);margin-top:2px;" id="modalOrderId"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span id="modalStatus"></span>
+        <button class="btn-icon" onclick="closeModal()">✕</button>
+      </div>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<!-- IMAGE PREVIEW -->
+<div id="imgPreview" style="display:none" class="img-preview-overlay" onclick="this.style.display='none'">
+  <img id="imgPreviewSrc" src="" alt="Photo">
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── STATE ───────────────────────────────────────────────────────────────────
+let SCRIPT_URL = localStorage.getItem('spares_script_url') || 'https://script.google.com/macros/s/AKfycbwf7-r6WkASfHkKjut8TiVUFa7IBl1mm7Z8bOfOQCy-3T0tnDHQ_6GPcdYvxgcBdRk8kw/exec';
+let DEMO_MODE = localStorage.getItem('spares_demo') === 'true';
+let ROLE = localStorage.getItem('spares_role') || '';
+const PRODUCTS = ["IFB DESCALE", "SAM SCALEGONE", "LG SCALEGONE  (POUCH)", "ROLLER   SAM (6KG)", "LG STEEL KNOB", "ROLLER  LG", "DRAIN SPRING 400T", "OUTLATE (VID)", "IFB CANDLE", "Tozzle Wash DESCALE", "Outlate  (W/P)", "LG SCALEGONE", "PVC DORI", "DIOD SINGLE", "SCALEGONE(L)", "NICE", "IFB LIQUID", "LG SCALEGONE(COMBO)", "M21 BELT", "DRAIN SPRING LG", "ADAPTOR SINGLE SCREW", "SPIN CAP LG SMALL", "OUTLATE  LG", "MAIN CORD 3MTR", "COTTON DORI", "OTB UNIVERSAL   (VID)", "LG NEW D.BELLOW(O)", "LG ROUND FILTER", "OUTLATE GOD", "ANTI VIBRATION PAD", "SPIN CAP LG BIG", "E50 FILTER(O)", "LG SEMI LF", "W/P ADAPTOR BIG(WHITE)", "OTB VID (O)", "INLET SEMI   1.5MTR(DEFLEX)", "BRASS NUT", "E50 FILTER", "SPIDER BOLT(IFB)", "INLET SEMI  W/P(2MTR)", "25/688 BELT", "SNAP  12CUT", "VID NEW D.BELLOW(O)", "ADAPTOR", "LG ROUND FILTER (O)", "LG PS  (O) 09", "OTB W/P  BIG(O)", "LG 3PIN DA  (O)", "WM 27 BELT", "AUTO INLET 2MTR", "PULSATOR SCREW", "IFB FLT SUSP  (YELLOW)", "D,SET LG NEW", "D,LEVER 6800", "LG FULLY D.BELLOW(O)", "INLET SEMI   3MTR(DEFLEX)", "FEVI BOND (20 MRP)", "SAM MAGIC FILTER", "AUTO INLET 1.5MTR", "LG NEW D,BELLOW", "ECO WASH GB(O)", "SPIDER BOLT", "AUTO INLET 3MTR", "25/635 BELT", "ROLLER SAM   (9KG)", "6800 FLAT SPRING", "KNOB W/P ACE OLD", "HAIER FULLY LF", "OTB LG", "LG DBL 15M 4W WT", "LG FULLY LF", "PRESSURE SWITCH CONNECTOR (LONG) LG", "OUTLATE HAIER", "LG PS", "TROLLY UNIVERSAL", "VIRAT KNOB", "LYGINIC DESCALE", "SAM D,BELLOW", "W/P COMBO", "W/P SMALL GB", "ADAPTOR WITH FILTER", "10MFD CAPACITOR", "A/C STAND", "SAM ROLLER PULSATOR", "OTB UNIVERSAL", "IFB SUSP  TL (23'')", "UNI. OTB HOLDER", "SPIN CAP W/P (O)", "INLET SEMI   2MTR(DEFLEX)", "ROLLER SAM  (SEMI)", "SAM FV (O)", "LG STEEL KNOB (O)", "SNAP  13CUT", "OTB 400T(O)", "LG NEW GB  (SR)", "SAM LAXMI PULSATOR", "3MTR OUTLATE", "SAM FV (SR)", "GOD UNI. OTB", "SPIN CAP 6800", "LG MAGNET", "HAIER MAGIC FILTER(O)", "D,SET VID NEW", "22.5 BELT", "SAM B TO D PIPE", "TAP(H)", "SPIDER BOLT(IFB) BLUE", "LG FLT LEG", "6205 HCH", "LG SM", "LG FULLY D.BELLOW", "HAIER SEMI LF", "LG PS  (O)", "D,SET LG OLD", "20.5 BELT", "2MTR OUTLATE", "LG SUSP", "FLEXI MAGIC (FULLY)", "IFB BULLET", "LOCK BOLT", "SLEEV BIG", "6800 DOOR SPRING", "D,LEVER LG", "TOOL BAG", "HAIER MAGIC FILTER", "ROLLER  LG (O)", "6800 ST", "6006 HCH", "Glass Try  9.5 Inch", "MAGNATRONE 214 (O)", "OTB UNIVERSAL (LG)", "OVEN CAPACITOR", "W/P I,PULLY BIG", "DX", "SAM NUT", "DOOR SPRING MIX", "W/P SMALL GB(O)", "D,LEVER LG (O)", "LG SINGLE FV", "Tozzle Wash DESCALE (COMBO)", "SPIN CAP SAM BIG", "LG DOOR SPRING", "LG SINGLE WT", "KNOB SAM", "SLEEV", "W/P SEMI D,BELLOW(O)", "BRAKE WHEEL LG", "LG FLT 2WAY FV", "6800 D,BELLOW(O)", "6502 D,BELLOW(O)", "6800 CAPACITOR", "123 LOCK", "FEVI BOND (30 MRP)", "LG FULLY D.ASSY (O)", "KNOB W/P ACE BIG", "KNOB UNIVERSAL", "GREASE(100gm)", "W/P FV (O) YELLOW", "FUSE", "6000 GB(O)", "TAP", "HOSE CLAMP(SEMI INLET)", "123 OIL SEAL (O)", "LG ST", "9.5+4 CAPACITOR", "LG NUT", "IFB DOOR LOCK", "22/572 BELT", "2230 BELT", "OTB SAM  NEW(O)", "SAM PS NEW", "FUSE BIG", "ROYAL LOCK", "10+5 CAPACITOR", "W/P GB ORANGE(O)", "D,SET ONIDA", "VID SM", "PANASONIC NEW LF", "IFB DOOR LOCK (O)", "GOD FULLY LF", "DOOR SPRING", "ROYAL OIL SEAL", "INLET SEMI  W/P(3MTR)", "LG 12V FV (WHITE COIL)", "PULLY BOLT+NUT", "400T D,BELLOW(O)", "LG PS (NAKAGAWA)", "VID PP LF", "INLET SEMI LG(2MTR)", "W/P I,PULLY", "SAM SEMI LF", "LG I,PULLY BIG", "PANASONIC OLD LF", "COVER", "D,SET GOD", "SPIN CAP LG BIG(O) 3102", "FLEXI MAGIC (SEMI)", "2210 BELT", "LG NEW GB (O)", "IFB DOOR HANDLE CHROME(BIG)", "D,SET", "200T LF", "SAM PS", "PANASONIC SCALEGONE", "KNOB GOD CHROME", "6204 HCH", "W/P COMBO (BLACK)", "SUSP HOLDER W/P", "W/P SM  (O)", "M22 BELT", "HOSE CLAMP", "ONIDA GB (SR)", "SAM SM", "LG DOOR SPRING(NEW)", "6800 LF", "SNAP SAM", "SAM SUSP", "D,SET W/P", "FEVI BOND (50 MRP)", "FUSE (CERAMIC)", "D,SET SAM", "MAGNATRONE 610(O)", "D,SET 400T", "SAM FV  ORANGE", "ARROW LG (O)", "IFB FLT SUSP", "2200 BELT", "6205 SKF", "LG SMALL LF", "LG FLOWER", "D,SET LG 9KG", "MECH LG     (SR)", "VID NEW D.BELLOW", "OTB LG (O)", "SLEEV SMALL", "IFB SUSP  TL (24'')", "INLET SEMI  1.5MTR", "OTB UNIVERSAL(DVM)", "7002 WT", "LG FLT 2MTR OUTLATE", "6800 WT(N)", "KNOB W/P ACE NEW", "XD 41 GB", "D,LEVER SAM", "PRESSURE SWITCH CONNECTOR (LONG)", "SAM SUSP (INVERTER)", "SIEMENS ADAPTOR", "SAM FV", "SPIDER SAM (15182)", "OTB LG(9KG)", "SPIN CAP LG SMALL(O) 9005", "ONIDA D,BELLOW", "DRAIN SPRING 6800", "SAM FULLY D.ASSY", "601 GB", "2220 BELT", "SAM D,BELLOW (O)", "MEMRAN", "LG SEMI LF(O)", "SAM 3WAY FV(BLUE)", "W/P B TO D PIPE", "SPIN CAP VID", "IFB FLT PS (5200 TYPE)", "PANASONIC SUSP(BLUE/YELLOW)", "ARROW VID NEW", "W/P D,BELLOW(O)", "OVEN LAMP BIG", "PRESSURE SWITCH CONNECTOR (LONG) SAM", "D,LEVER GOD NEO", "INLET SEMI  2MTR (BLUE STAR)", "SAM DA(WHITE)", "ROYAL HUB (O)", "OUTLATE LG(2mtr)", "SAM DBL FV", "Super fix (50MRP)", "LG SCALEGONE(COMBO) NEW", "KNOB LG", "W/P FV (O)GREY", "OVEN FLOWER", "LG FULLY D.ASSY", "L3 SUSP", "ROYAL GADA", "SPIN CAP SAM SMALL", "IFB PUMP   SMALL", "D,SET SAM BIG", "COVER LG  FULLY", "L2 SUSP", "WATERGUARD", "IFB FV", "6800 35M WT(N)", "SNAP 12/13CUT", "PRESSURE SWITCH CONNECTOR (SHORT)", "SAM DA", "6201 GB (SR)", "LG FLT SUSP", "OVEN DOOR SWITCH 3PIN", "DRAIN SPRING", "SAM GB   (SR)", "IFB 2WAY FV", "WIRE TAP", "W/P I,PULLY BIG(O)", "IFB 2MTR OUTLATE", "762 BELT", "HAIER 45M WT(4PIN)", "BRAKE WHEEL SAM", "GB WASHER+NUT", "LG SM (O)", "GOD SCALEGONE", "LG 12V FV (BLUE COIL)", "WATERGUARD (PVC)", "GOD EON PULSATOR", "SAM HUB", "HALL SENSOR 2001", "LG OLD GB (SR)", "HUB BOLT", "ROZA GB (SR)", "HUB BOLT BIG", "SPIDER LG (901) 4''", "SPIN CAP 400T", "LYGINIC DESCALE(COMBO)", "SAM ROLLER PULSATOR (ROUND SNAP)", "D,LEVER W/P", "KNOB W/P", "LG I,PULLY SMALLEST", "SAM DBL FV(BLUE)", "6000 40M WT(N)", "OUTLATE LG(3mtr)", "LG 2WAY FV LONG", "IFB GASKET 010", "METAL  TROLLY", "1001   PULSATOR(O)", "UNI. FEED HOSE", "LG 3PIN DA (L)", "Glass Try 12.5 Inch", "ONIDA WM", "LG B TO D PIPE", "INLET SEMI  3MTR (BLUE STAR)", "6800 IBC", "LG OLD D,BELLOW", "LG 12V FV (2 COIL)(O)", "IFB ULTRA OIL SEAL", "COVER SAM ACTIVE", "UNI. SM", "LG WM", "6206 HCH", "MICA PAD BIG", "HAIER 35M 8W WT", "OVEN LAMP SMALL", "SAM OILSEAL SMALL", "34.2 BELT", "Glass Try 10.5 Inch", "IFB PS", "29/760 BELT", "LLOYD GB (1.75)", "6800 PULSATOR", "LG BUZZER", "LG FLT 3MTR OUTLATE", "400T SUSP", "SPIN CAP W/P 9KG", "ROLLER VOLTAS", "LOCK 123/ROYAL", "19.5 BELT", "LG HUB", "ARROW 400T", "6800 WM", "LG SMALL LF(O)", "LG DOOR LOCK 105", "PCB SAM ACTIVE", "IFB MAGIC FILTER", "LG HYDROLIC DOOR CLAMP(2*1 SET)", "IFB D,ASSY", "LG STEEL KNOB NEW(O)", "BOSCH DESCALE", "6802 WT(N)", "LG PUMP", "GOD SUSP 24\" Y/G", "2280 BELT", "7002 WT(7 WIRE)", "L2 HUB (O)", "LG FLT PS", "LYGINIC LIQUID DESCALER(100ml) [COMBO 4*1]", "6201 PULSATOR", "W/P BREAK ARM", "6000 15M 4W WT", "6006 SKF", "W/P DA(O)", "LG BIG ROLLER PULSATOR", "12+5 CAPACITOR", "GHANTI PCB(MICRO-SET)", "OTB 400T(OM)", "COVER  FULLY (PLAN)", "LG NEW GB(GOD)", "6800 BALANCER RING", "D,LEVER 6800 DX", "55HBT GB(SR)", "800PD PULSATOR", "GOD B TO D PIPE", "WASHER BALL SET", "LUMINA PS LONG WIRE", "LG SEMI SUSP", "GOD FLOWER", "ARROW LG 9KG", "GOD FV(W)", "MAGNATRONE 210(O)", "SAM DIXON PULSATOR", "W/P FV(L) YELLOW", "IFB DOOR HANDLE(TRIANGLE)", "W/P LONG GB", "L1 PIPE", "680 BELT", "GHANTI JALI", "SNAP 15CUT", "T-SERIES PULSATOR", "SAM DBL FV(O)", "BOSCH LIQUID DESCALE", "SCREW DRIVER 6100", "KNOB GOD 800PD", "SAM SM(O)", "KNOB W/P ACE", "BODY   LG  (O)", "FEED HOSE 12\"", "LG STEEL KNOB NEW", "IFB PUMP ULTRA", "OVEN DOOR SWITCH 2PIN", "LG FULLY ELBOW", "SCREW DRIVER 6250", "6102 WT", "D,SET LG", "VID BUZZER", "ACE SUSP", "IFB T HING", "123 GADA", "GOD NEO GB", "SAM MEMRAN", "W/P WT(7366)", "LG OF HOSE B", "LG ST 10MIN", "LG OIL SEAL", "W/P ST 10M", "460 BELT", "6201 D,BELLOW(O)", "SPANNER SMALL", "LG 12V FV (2 COIL)", "D,SET ROZA", "6204 SKF", "LG DOOR LOCK 101", "COVER FLT 8KG PLAN", "6800 M,PULLY", "SAM FLT SUSP", "IFB 3MTR OUTLATE", "ADAPTOR WITH FILTER(BOSCH)", "6800 M,PULLY(BIG)", "LG SM 40W", "IFB OIL SEAL 6KG", "WIND JET DRY SPIN LID", "SAM DOOR LOCK", "SPIN CAP LG 8KG", "D,LEVER LG 9KG", "INNER LID 1262(O)", "PANASONIC B TO D PIPE", "W/P DUMP VALVE", "2250 BELT", "LG 40M WT(N)", "ARROW 6800", "34.4 BELT", "LG SEMI D,ASSY", "VID FV", "AUTO INLET W/P(1.5M)", "L1 SUSP", "P.CAP W/P  (HEXA) COMPLETE", "IFB SUSP  TL (25'')", "22/504 BELT", "EKL 15M CROSS WT", "SCREW DRIVER 6150", "W/P OF FILTER BRUSH", "1001  PULSATOR", "220V TT MOTOR", "PVC DORI(O)", "SPIDER IFB 6KG", "KNOB GOD", "LG NEW GB (GEAR ON)", "6800 MAGIC FILTER", "LG DD DA(12V-BLACK)(O)", "W/P 40M WT", "GOD PS", "D,SET LG FULLY", "L1 HOSE", "LG B TO D PIPE (O)", "HAIER PULSATOR", "13MFD CAPACITOR", "BOSCH FLT SUSP", "6206 SKF", "LG DBL 35M 4W WT", "PCB UNIVERSAL (6688) BULLET", "BACK COVER LG FULLY", "D,LEVER GOD", "SCREW DRIVER 6200", "700E BELT", "ROLLER  LG(BIG)", "BRAKE WHEEL W/P  ACE", "ELENA TUB HOSE", "LG FULLY LF(O)", "6000 40M WT(O)", "FAN MOTOR 3PIN", "6800 I,PULLY", "LG MEMRAN", "BRAKE WHEEL ONIDA", "SPIDER IFB ULTRA", "IFB FV (W)", "WM23 BELT", "D,LEVER VOL", "BOSCH PULSATOR", "MAGNATRONE (O)", "SPLUCH PULLY", "CASTER SET", "SAM SEMI SUSP", "VIRAT MAGIC FILTER", "LG DOOR SNAP", "CROMA WT", "LG FLT FEED HOSE", "705 BELT", "IFB D,BELLOW", "FEED HOSE 8\"", "SAM OILSEAL", "LG OF HOSE", "IFB FLT SUSP(BLUE)", "IFB B TO D PIPE", "VID SM 65W", "LG HANDLE SET", "D,SET 6800", "GOD NEW D,BELLOW(O)", "123 SWITCH", "2270 BELT", "OTB HAIER", "IFB SUSP  TL", "LG FEED HOSE(SEMI)", "MAGNATRONE 214", "6203 HCH", "GRACIA 15M WT", "6802 WT(O)", "OTB 60HBT", "LLOYD GB", "GHANTI THELI(BIG)", "HAIER/INTEX WT 35M 8W", "GROMET", "BOSCH PUMP UNIVERSAL", "GOD NEO D,BELLOW", "OTB UNIVERSAL  (VATICA)", "T SPANNER", "TVS FV", "8502 WT", "6502 D,BELLOW", "SWIFT OIL SEAL (O)", "DIOD DBL", "ROLLER SAM  (11KG)", "IFB DOOR HANDLE CHROME", "MAGNATRONE 610", "SAM MAIN MOTOR", "FUSE WITH CONNECTOR", "OTB 55HBT", "OTB UNIVERSAL(OM)", "LG 12V FV (FLT-2WAY)", "5500 PS", "SAM 3WAY FV (O) BLUE", "GHANTI SWING MOTOR", "PANASONIC FV", "6000 BALANCER RING", "GRACIA 35M WT", "IFB SUSP  TL (22.5'')", "6006(O)", "ANGEL", "VID SM (O)", "OVEN CAPACITOR (JADI PIN)", "SPIDER MIDEA", "SLEEV LG 9KG", "MAIN CORD VID", "IFB 2WAY FV (O)", "ADAPTOR (H)", "7002 LF", "RO FILTER", "IFB HANDLE PIN", "LG FEED HOSE(FULLY)", "BOSCH SUSP TL 60CM", "SAM 15M DBL WT", "HANDLE PIN (IFB)", "TUB SUPPORT ASSY-SWIFT", "OTB ROZA", "W/P ST", "LLOYD GB (1.5)", "LG DOOR LOCK 103", "SPIDER SAM 11KG", "LILIPUT WT", "400T D,BELLOW", "ROZA SUSP", "400T D,BELLOW(OM)", "6800 COCK LID", "VID DOOR SPRING", "BOSCH FV", "MECH LG (DR)", "VID FULLY D,ASSY", "SIEMENS FV", "MAGNATRONE 610 GLANZ", "HAIER PS BLACK (2 PIN)", "SPLUCH SET", "VID B TO D PIPE", "2300 BELT", "Super fix (20MRP)", "LG SUSP (9KG)", "SCREW LG BODY TOP", "SAM DA  (PVC)", "KNOB GOD RED", "BOSCH SUSP TL (IMP)", "WM31 BELT", "CAPACITOR MIX", "SPIN CAP LG JUMBO", "BELT MIX", "BRAKE PLATE LG", "PCB SAM (GREEN) 7SW", "IFB 3WAY FV", "LG WM 90W", "GASKET RING(IFB)", "6000 FLAT SPRING", "LG 12V FV (FLT-3WAY)", "2240 BELT", "6112 WT", "D,LEVER HAIER", "5800 PS", "WM22 BELT", "GOD PS(O)", "ONIDA DRAIN SWITCH", "C CLAMP SAM", "VOLTAS MAGIC FILTER", "SAM OILSEAL BIG", "9+5 CAPACITOR(W/P)", "INLET SEMI VID(2MTR)", "GASKET RING(IFB) BIG", "6201 DRAIN SWITCH", "D,LEVER 6000", "TAFLON TAP", "SPIDER IFB ULTRA 6KG", "GOD NEO PULSATOR", "2290 BELT", "OTB W/P 801(O)", "11+6 CAPACITOR", "SAM LAXMI PULSATOR (ROUND SNAP)", "L3 HUB", "640E BELT", "HAIER 2WAY FV", "BOSCH PS(FL)", "400T GB(SR)", "INLET SEMI 5MTR", "2260 BELT", "GB WASHER", "SAM FLT LEG", "SAM DA (O)", "W/P 2WAY FV(O)", "IFB DOOR SNAP(O)", "HAIER 45M WT", "LG FULLY ELBOW LONG", "BOSCH/SIEMENS DESCALE", "SAM WM", "AUTO INLET 5MTR", "GEM PULSATOR(4FLOWER)", "BOLT-NUT BREAK WHEEL", "TABLET", "IFB DA(BLK)", "SPIN CAP 6000", "SAM DA (BLK)", "IFB SUSP  SPRING (SET)", "IFB DOOR HANDLE SILVER BIG", "BOSCH SUSP TL 54CM", "LLOYD MAGIC FILTER", "IFB MEMRAN", "SAM D,BELLOW BIG", "LG SMALL ROLLER PULSATOR", "123 HUB (O)", "811 FV", "DATTA-FLT TR", "1001 GASKET", "SAM FLT PS", "COVER FLT 7KG PLAN", "6502 LF", "ACE SUSP (O)", "LYGINIC LIQUID DESCALER(500ml)", "WIRE TAP(STEELGRIP)", "5MTR OUTLATE", "SPIDER SAM 15971", "EKL 35M CROSS WT", "MECH SAM", "ONIDA M,PULLY", "LLOYD PULSATOR", "GASKET RING(IFB) SMALL", "6012 WT", "COVER W/P (PLAN)", "SAM ST", "694 BELT", "IFB TR(O)", "OUTLATE W/P(3M)", "PRESSURE SWITCH CONNECTOR(SHORT) LG", "6201 WT", "GOD FV(O)", "LG SEMI D,BELLOW (O)", "COVER SAM ACTIVE (PLAN)", "KNOB SAM (-)", "MICA PAD SMALL", "HAIER PS", "INLET SEMI GOD(3MTR)", "DRAIN SPRING VID", "10MFD CAPACITOR(IFB)", "XD17 GB", "LG SM (WITH JACK)", "AUTO INLET 4MTR", "12+6 CAPACITOR", "DESCALER", "HAIER DA", "6201 ST", "ZORRIK BIG", "GOD D,BELLOW+ARROW", "LG SINGLE FV (O)", "5200 PS", "LG 12V FV (2 COIL) RED+BLUE", "SAM DA(9KG)", "LG DOOR LOCK 104", "SPIDER IFB ULTRA  6KG (IMP)", "W/P GB SET(O)", "6000 WM", "HAIER 15M WT(4PIN)", "W/P BREAK ARM BLUE", "ULTRA GASKET", "22/572 BELT(O)", "6502 DRAIN SWITCH", "LG 12V FV (2-BLUE COIL)(O)", "SAM SENSOR", "123 BREAK ARM", "INLET SEMI VID(1.5MTR)", "TT MOTOR", "IFB DOOR HANDLE BIG", "HUB BOLT SMALL", "SAM PCB (R)", "SAM 40M DBL WT", "W/P OF FILTER FRAME", "IFB FLT LEG", "EXT. PIPE 2MTR", "IFB FLT SUSP(BLK PVC)", "SIEMENS FV (WITH FLOW METER)", "W/P SM", "LG FLT 2WAY FV(O)", "PRESSURE PIPE", "ARROW LG 9KG(O)", "WM29 BELT", "GOD SUSP B/B", "ANTI VIBRATION PAD (ADJ)", "510 BELT", "MAIN CORD SAM", "PANASONIC DRAIN SWITCH", "801 WT", "SPIDER BOLT(IFB) BIG", "IFB FLT PS", "LG SCALEGONE (O)", "6000 35M WT(N)", "IFB DOOR HANDLE SMALL", "6000 PULSATOR", "LG DOOR LOCK 106", "D,LEVER GOD 800PD", "IFB DA", "PCB SAM 4SW", "SPIN LID 6000", "762 BELT (VEEHOLD)", "SLEEV W/P", "MECH SAM (O)", "GHANTI THELI", "SAM OIL SEAL SMALL(IMP)", "KNOB SAM BIG", "1228 BELT", "LG 12V FV (WHITE COIL)(O) 1001P", "6800 OF HOSE B", "LG DOOR HING (PVC)", "HAIER GB", "LG DOOR LOCK 102", "6205(O)", "HAIER FV(O)", "GOD FULLY D,ASSY", "6306 HCH", "W/P OF FILTER FRAME (SLIDING)", "LG WM 105W", "TUB SUPPORT ASSY-24\"", "PCB SAM 13SW", "W/P LONG GB SET(O)", "EKL CROSS DRAIN SWITCH", "SPIDER BOLT(IFB) PINK", "GOD D,BELLOW(O)", "IFB DOOR HING SMALL", "D,SET VID", "SAM 3WAY FV", "LUMINA PS", "9.5+5 CAPACITOR", "GOD FV", "SAM 35M 4W WT", "800W TRF", "ARROW LG", "IFB BEARING PAD", "STUBY 110", "FAN MOTOR 2PIN", "IFB GASKET", "LG SUSP(O)", "INNER LID 1262", "SAM OF HOSE", "INLET SEMI GOD(1.5MTR)", "MECH LG  INVERTER", "660 BELT", "10+5 CAPACITOR(O)", "MARQ PULSATOR 6 LEAF BIG", "ACE PULSATOR", "SPIN LID 1022", "D,SET SAM(FULLY)", "MAIN CORD 15AMP", "1215 BELT(OPTICAL)", "PCB IFB", "IFB PUMP SUPREMO", "400T I,PULLY", "SPIN MOTOR", "VID SEMI SUSP", "M21 BELT(O)", "SAM OILSEAL BIG(IMP)", "SAFETY SWITCH LG", "MAGNATRONE (O) 001L", "WM24 BELT", "TAP(H)-BRASS", "SAM HUB(NEW)", "MECH LG (R)", "SPIN CAP LG SMALLEST(O)", "SAM FLT FEED HOSE", "BODY   SAM", "SAM 15M 7W WT", "W/P 40M WT(O)", "SAM ROLLER PULSATOR(SEMI)SQUARE SHAFT(BR-03)", "IFB DOOR HANDLE", "IFB GASKET 020", "VID PS KORIO", "VOLTAS PULSATOR(BEKO)", "BOSCH PS", "7002 WT (O)", "BEARING PLATE W/P", "LG CARBON SET", "ARROW GOD", "811 LF", "KNOB GOD BIG", "2190 BELT", "6800 D,BELLOW", "D,LEVER GOD (O)", "SNAP 811", "ONIDA 15M 6W BRACKET WT", "SAM DBL FV(GRAY)", "6000 40M WT", "IFB FLT SUSP(GREY)", "Super fix (30MRP)", "9+5 CAPACITOR", "MAGNATRONE 210", "JumbO STAND", "BOSCH SUSP TL", "D,SET GOD 800PD", "DIOD", "LG 12V FV (BLACK COIL)", "SPIN CAP LG JUMBO(O)", "LG 12V FV (3 COIL)", "W/P SEMI SUSP", "GOD SM 6502 70W", "GASKET RING(LG)", "MECH PANASONIC  D/G", "A25 BELT", "GOD LIQUID", "ARROW 200T", "LLOYD PS", "TUB SUPPORT ASSY-SWIFT(O)", "SPANNER BIG", "9+6 CAPACITOR", "UNI. SUSP", "10+6 CAPACITOR", "6800 ST(O)", "HAIER 15M WT", "IFB OIL SEAL", "400T LF", "IFB TUB (FL) 6KG", "9.5+6 CAPACITOR", "W/P SM(OLD MODEL)", "SAM GASKET(3988)", "LG I,PULLY (O)", "LG HYDROLIC DOOR CLAMP (PVC)", "4MTR OUTLATE", "SPIDER HAIER", "OVEN THERMOSTAT", "GOD SM 40W", "TUB SUPPORT ASSY-ROYAL", "SAM 15M 6W WT DBL", "SPIN CAP LG 9KG", "CROMA WT 35M", "180W  WASH MOTOR", "ROYAL HUB(L)", "SPIN CAP LG", "IFB DOOR HANDLE(TRIANGLE) BLACK", "PANASONIC PULSATOR(SEMI)", "LG DOOR HING 2001", "OTB SAM 8700(O)", "BRAKE PLATE VID", "KNOB GOD 8002", "PULLY NUT+WASHER", "SAM DA(NEW)", "INNER LID LG 9KG", "LG 12V FV (WHITE COIL)(O) 1001S", "LG DBL 40M WT", "LG GASKET 8KG(O) 2208", "L2 HOSE", "WIND JET DRY SPIN LID 1020", "GOD DA (O)", "SCREW DRIVER 6300", "MAGIC TROLLY", "COIL CLEANER-1LTR(LYGIENIC)", "IFB 2MTR INLET", "SPIDER IFB 9KG", "BPL WT(W)", "BUZZER", "LG SM  (WATERPROOF)", "C PIPE LG", "6305 HCH", "GHANTI PCB(WAVE)", "LG OIL SEAL (IMP)", "LG SM 9KG", "SAM FLT PS(BLUE)", "SAM PUMP NEW", "SCREW DRIVER 5100", "SAM ROLLER PULSATOR (GOD)", "LG MAGIC FILTER 11KG", "630 BELT", "SPIDER SAM 15963", "Continuity Tester", "PCB LG 12V 10SW", "SAM ROLLER PULSATOR(SEMI)ROUND SHAFT(BR-02)", "ZORRIK SMALL", "INLET SEMI GOD(2MTR)", "6802 WT", "Y PIPE LG", "SPIN LID AIR TURBO", "L3 GADA", "730 BELT", "GOD NEW D,BELLOW", "6800 D.ASSY", "BRAKE SPRING", "811 FEED HOSE", "400T SM", "VOLTAS PULSATOR", "GHANTI RING(PVC)", "HAIER ST", "OUTLATE BOSCH", "6012 WT(O)", "BOSCH PULSATOR  7KG", "W/P SM(NEW MODEL)", "PANASONIC PS(Uni)", "6201 GB(O)", "400T WT", "HAIER D,BELLOW", "UNI. OTB", "W/P WM(O)", "BOSCH SUSP TL 56CM", "OIL SEAL 30-52-10", "400T WT(N)", "10+4 CAPACITOR", "ROYAL HUB+LOCK", "INNER LID SAM BIG", "COVER FULLY 8KG PLAN", "6801 GB(O)", "PCB  (TESTED OK)", "GASKET RING(LG) SMALL", "MHJ WT", "OUTLATE GOD(3mtr)", "BRAKE WIRE", "GHANTI DOOR SWITCH", "ROZA PULSATOR", "LG FLT PS  (O)", "7002 WT(8 WIRE)", "SAM 12V FV", "W/P HEXA PULSATOR (BIG)", "D,LEVER CHANDANI", "PANASONIC 2WAY FV(O)", "SAM DOOR SWITCH (FULLY)", "6203 SKF", "COVER FLT 8KG", "VID OTB HOLDER", "DATTA(4*1SET)", "W/P 9.5KG SUSP", "6502 GB(O)", "DOOR SWITCH LG(SEMI)", "SPIN LID 1020", "BRAKE PLATE SAM", "GOD FULLY D,ASSY (EON)", "710 BELT", "LG FLT 3WAY FV", "6800 WM (O)", "AMSTERD PULSATOR", "GDS950 GB", "SAM 15M WT", "GOD 35M 7W WT", "MS  TROLLY  (24 WHEEL)", "C HOSE SAM", "WASH MOTOR", "SPIDER IFB", "COVER FLT 5.5KG PLAN", "W/P FV(L)GREY", "LG 40M WT(O)", "IFB OIL SEAL 9KG", "360 8KG PULSATOR", "640 BELT", "COVER FLT 7KG", "FRESH & CLEAN LF BLUE", "CROMA DA  SMALL", "LG OIL SEAL 5.5KG(IMP)", "801 SUSP", "BOLT-BREAK WHEEL(BIG)", "OUTLATE HAIER (O)", "PCB W/P", "WYBER 35M WT", "COVER IFB(O) 7-8KG", "123 PS", "VIRAT SUSP", "MECH BPL SMALL(FRESH)", "P.CAP 6800", "BRAKE WHEEL LG 9KG", "DETERGENT BOX LG", "W/P GB YELLOW(O)", "GOD 40M WT", "811 D,ASSY SPRING", "LLOYD PULSATOR (SMALL)", "SAM FLAT SPRING", "ELENA DX OIL SEAL", "610 BELT", "D,SET BOSCH FULLY", "IFB FLT PS(3PIN)", "PCB SAM ACTIVE(O)", "WM28 BELT", "BOSCH MAGIC FILTER", "SAM 3WAY FV (GREY)", "LG OTB HOLDER", "OVEN DOOR HOOK", "SAM OF HOSE B", "SAM FLT PS(5200 Type)", "811 D.Bellow", "SAM M,PULLY", "BOSCH DOOR HING", "LG SEMI D,BELLOW", "SPIDER IFB 7KG (2 HOLE)", "HAIER PULSATOR  (SHIVLING)", "21V TT MOTOR", "123 SUSP(O)", "COVER SAM ACTIVE 9KG", "INTEX 35MT 8 WIRE", "BOLT-BREAK WHEEL", "LG 12V FV (FLT-3WAY)(O)", "LG PS (NAKAGAWA)(O)", "900W TRF", "LG M,PULLY BIG", "GEM PULSATOR", "P.CAP LG BIG(COMPLETE)", "30V TT MOTOR", "KNOB SAM NEW MODEL", "IFB DOOR LOCK MAGNETIC", "MECH LG  (O)", "W/P OF FILTER WITH BRUSH", "D,LEVER ACE", "SAM ROLLER PULSATOR(SEMI)ROUND SHAFT(BR-04)", "6800 SPIN TUB", "INLET SEMI 4 MTR", "VOLTAS 40 DBL WT", "SPIN CAP LG SMALLEST", "IFB TUB (FL)", "IFB ECO-CRYSTAL", "A26 BELT", "ARROW", "400T OTB HOLDER", "690 BELT", "702 BELT", "IFB COMMON CARD", "SAM 35M 7W WT", "12+5 CAPACITOR DUAL (O)W/P", "VID ST", "ONIDA 35M WT(NEW)", "W/P WIZPRO", "CASTOR(LOCK)", "HAIER 45M WT (O)", "OUTLATE GOD(2mtr)", "UNI. SM (WATERPROOF)", "SAM WM (O)", "HAIER PULSATOR (DOTTED)", "GOD ON/OFF SWITCH", "T SPANNER 10MM", "TVS SM", "BRAKE WHEEL W/P 9KG", "SPIN CAP W/P", "W/P DOOR LOCK(O)", "PCB (DEFECTIVE)", "LG DOOR HING", "PANASONIC D.ASSY", "HAIER PS(1009C)", "28/710 BELT", "Y HOSE SAM", "GOD DA (333)", "HAIER OILSEAL", "IFB CLAMP PIPE(O)", "SAM SWITCH BODY", "ZARA  PULSATOR", "PANASONIC PULSATOR", "SAM DOOR SPRING", "LG DBL 15M 6W WT", "L2 PIPE", "HAIER FULLY D,ASSY(O)", "SAM RAT MASE", "ADAPTOR 1SCREW BIG", "KNOB", "LLOYD PULSATOR (BIG)", "INLET SEMI  3MTR", "6000 DOOR SPRING", "SIEMENS DOOR LOCK IQ500", "MAIN CORD 2MTR", "OUTLATE HAIER (SEMI)", "OVEN LAMP", "TOOL BAG()", "LG FLT 3MTR OUTLATE(GOD)", "WASH LID LG", "SPIDER SIMANS (IQ 500)", "LG FLT 2MTR OUTLATE(GOD)", "6000 15M DBL WT", "GOD DA (336)", "WIND JET DRY SPIN LID 1022", "EKL CROSS ST", "2310 BELT", "AKAI WT", "MAGNATRONE SAM(O)", "SCREW BREAK PLATE", "LG OIL SEAL 9KG", "OVEN CAPACITOR(OM)", "LG SEMI D,ASSY(9KG)", "VOLTAS PULSATOR(BEKO) A", "SPIDER LLOYD", "CASTOR(SADA)", "15MFD CAPACITOR", "2002 PULSATOR (O)", "LG WIREING(6019)", "SAM FULLY PULSATOR (OLD MODEL)", "LLOYD SUSP", "ARROW VIRAT", "SAM OIL SEAL(IMP)", "LG 12V FV (2 COIL) RED+BLUE (O)", "TSP BOLT", "W/P 40M DBL WT", "LG TUB", "650E BELT", "811 OF HOSE", "LG 220V FV", "1003 PULSATOR(O)", "360 8KG SUSP", "MECH IFB", "W/P 11KG SUSP", "13+5 CAPACITOR", "UNI. OTB VID", "LG DD DA(12V-BLACK)", "SPIDER IFB ELENA DX 4/5", "123 HUB+LOCK", "OVEN CAPACITOR(DIKEN)", "WM12 BELT", "MAGNATRONE 213(O)", "6000 I,PULLY", "WIND JET DRY SPIN LID (O)", "BOSCH DA", "6307 HCH", "LG OIL SEAL 5.5KG", "SPIN CAP GOD(O)", "LG I,PULLY", "MAGNATRONE (O) 732G", "OTB BPL BS40", "COVER FLT 7.5 KG", "PCB LG 8SW(BIG DISPLAY)", "IFB SNAP LOCK", "NUT+BOLT (GEAR BOX)", "OIL SEAL", "DRAIN SET SEMI", "6000 COCK LID", "A/C SERVICE COVER(BIG)", "HAIER SM (O)", "HAIER GB(O)  911", "CREATIVE GB", "MECH GOD EON(O)", "SAM ROLLER PULSATOR 9KG", "PULSATOR SCREW(SAM)", "BRAKE WHEEL W/P 801", "1201 BELT", "D,SET HAIER", "SPIDER BOLT(IFB) YELLOW", "PCB HAIER", "SAM ROLLER PULSATOR(SEMI)SQUARE SHAFT(BR-01)", "D,LEVER CLASSIC", "IFB 1.5MTR OUTLATE", "SAM GASKET(1664)", "UNI. OTB HOLDER(SMALL)", "7002 GB(O)", "TAP (NEW - BLACK)", "HAIER LF", "PANASONIC MEMRAN", "Tozzle Wash LIQUID DESCALE(500ml)", "BRAKE WHEEL 6800", "GDS950 PULSATOR", "SPIN CAP 6201(O)", "W/P WM", "0029 PULSATOR", "IFB HUB 3ARM", "P.CAP LG  SMALL", "D,LEVER NA", "LG PCB(R)", "SPIDER LG 1601", "SAM 40M WT(N)", "HAIER DRAIN RING", "W/P ST (O)", "WIRE CUTTER", "LG 12V FV (2-BLUE COIL)", "601 WT", "UNI. OTB SMALL", "LG PUMP MOTOR DC", "VID SM (WATERPROOF)", "W/P BIG ADAPTOR (W)", "L4 GADA (4PIN EDGE-28501)", "GASKET RING(LG) BIG", "HAIER SUSP 20''", "123 MOTOR(O)", "IFB OIL SEAL 7KG", "MECH 811", "6502 PULSATOR", "COVER FLT 9KG", "VOLTAS PULSATOR(BEKO) B", "OTB VID(OM)", "W/P SM 10KG (O)", "LG OIL SEAL 7KG", "A22 BELT", "DOOR SWITCH", "ROYAL LOCK(O)", "FLT TROLLY 22*24", "IFB SMALL PULSATOR", "1003 GASKET", "123 MOTOR", "GOD FULLY D,BELLOW", "SPIN LID 1022(O)", "670 BELT", "LG 12V DC FV", "IFB ULTRA OIL SEAL 7KG", "SAM DOOR LOCK IVERTER", "S PIPE  SMALL", "GHANTI ON/OFF SWITCH", "SAM FLT SUSP(BLUE)", "BOSCH PULSATOR  7KG (IMP)", "6000 M,PULLY", "LLOYD ROLLER PULSATOR", "W/P SEMI SUSP 9KG", "PRESSURE SENSOR HOSE", "HAIER GASKET", "PCB UNIVERSAL", "SS1 (POTLI)", "LG OTB HOLDER(O)", "BOSCH DOOR LOCK (ROHS)", "WATERGUARD(PAPER)", "IFB 1.5MTR INLET", "PANASONIC DA(BLK)", "MECH 1311", "SPIN CAP HAIER", "IFB CARBON", "TSP BOLT(BIG)", "SAM ST 10M", "480 BELT", "P.CAP LG BIG", "MECH LG(DVM)", "SAM SLIDER SET", "LG PS  (O) 1001C", "SPIDER IFB ULTRA 7KG", "692 BELT", "SWIFT OIL SEAL(L)", "FUSE WITH WIRE", "PANASONIC WT 35M 8W", "KNOB SAM(76A)", "6000 35M WT", "LG SEMI D,ASSY(9KG)(O) 2404", "GOD WM (O) 6201", "LG CAPACITOR(O) 9.5+6", "P.CAP LG  SMALL(COMPLETE)", "USER BOARD 54 CM", "TOSHIBA PS", "MAGNATRONE 210 GLANZ", "OTB SAM 9200(O)", "MECH LLOYD", "DETERGENT BOX W/P", "LG TEMP. SENSOR", "GOD SM 6201", "LLOYD DA", "BOSCH DBL FV", "HAIER DOOR LOCK", "SAM GB (GOD)", "23.5 BELT", "SIEMENS DOOR LOCK", "GOD B TO D PIPE(L)", "COOLER PUMP 18W", "7002 WT (L)", "COOLER TROLLY", "OVEN TRIANGLE", "LG ST(O)", "6306 SKF", "LG SEMI D,ASSY(9KG)(O) 2607", "SPIN LID 6800DX", "A/C STAND(H)", "NATIONAL SEMI LF", "PCB SAM 11SW", "GROMET LG", "MAGNATRONE STICKER", "ROLLER LLOYD", "MECH LG 9KG", "INLET SEMI VID(3MTR)", "IFB ULTRA C HOSE", "801 GB", "123 DOOR SWITCH", "HAIER WM", "360 8KG PS PLATFORM", "D,LEVER GOD 8002", "SAM DBL FV(O) GRAY", "SAM GASKET(2857)", "SS FIX STAND", "HAIER LF(BIG)", "IFB DOOR SPRING", "LG 2WAY FV LONG(O)", "FLAT SPRING", "LG 12V FV", "FLT TROLLY", "IFB BEARING SIT", "SS FIX STAND(BOX)", "FUSE WITH COVER", "GOD TRANSFORMER", "CABLE TIE 300MM", "SS TROLLY FULLY(BOX)", "SPLUCH SPRING", "SAM FULLY PULSATOR", "SPIDER IFB 7KG", "CABLE TIE 250MM", "FEED HOSE", "BRAKE WHEEL W/P", "SPLUCH PULLY 11KG", "GEM PULSATOR (ROUND SNAP)", "HAIER SM", "GOD DOOR SWITCH(FULLY)", "VID 23\" SUSP", "BODY   W/P", "SPIN CAP LG 9KG(O)", "LG WIREING(6013)", "MOTOROLA DOOR LOCK", "VOLTAS ST", "SPIDER BOLT (HEX)", "LG I,PULLY SMALL", "SAM SEMI PULSATOR", "SAM 12V FLT 2WAY FV", "GOD NEO D,ASSY", "ELENA FOLDED HOSE", "SAM SELECTOR SWITCH", "6388 BELT", "A/C COVER(INDOOR) 40''", "PULSATOR SCREW(BIG)", "BRUSH(SMALL)", "P.CAP W/P (HEXA)", "123 OIL SEAL(L)", "IFB FEED HOSE", "PRESSURE SWITCH CONNECTOR", "GOD ST NEW SATT", "LLOYD GB (1.25)", "HAIER FLT PS", "BALANCER RING 6000/6800", "VID DA(O)", "6800 FLOWER", "6305 SKF", "MECH IFB (S/G)", "VOLTAS DBL FV", "BOSCH PUMP FILTER", "PCB LG 8SW", "PCB SAM", "VOLTAS PS", "PANASONIC TR(O)", "GHANTI JALI(MICROFINE)", "GOD WM 135W", "MS FULLY TROLLY", "IFB ECO-CRYSTAL BLUE", "SA63 WT 35M(N)", "ADAPTOR 1SCREW SMALL", "COVER SAM ACTIVE 9KG PLAN", "SAFETY SWITCH SAM", "0029 PULSATOR(O)", "SAM SUSP 9KG", "SAM SM (WATERPROOF)", "ROZA D,BELLOW", "IFB DOOR HING", "L3 SUSP EDGE", "MAGNATRONE 218(O)", "L BAND", "LG WIREING(6021)", "IFB GASKET 170", "IFB 3MTR INLET", "LG DD D,ASSY + DA", "DRIER PAD", "STABILIZER", "D,LEVER EKL", "LG MAIN MOTOR", "BPL PS FUZZY", "LG GASKET (O) 5009", "LG FILTER FRAME SMALL(O)", "PANASONIC 2WAY FV", "HUNDAI PULSATOR", "T SPANNER 8MM", "GHANTI JALI(NATRAJ)", "6067 WT", "600E BELT", "GHANTI RING(RUBBER-BLACK)", "WD40 (SMALL)", "IFB 3WAY FV(CROSS PIN)", "HAIER I,PULLY", "MECH PANASONIC  S/G", "W/P HEXA PULSATOR (SMALL)", "SAM SMALL HOSE", "VOLTAS GB(BEKO)", "SPIDER GOD", "M1 PCB", "PANASONIC PS", "M4 PCB", "IFB DOOR FRAME", "LG SEMI D,ASSY (O)", "BOSCH DESCALE(BOX)", "PANASONIC 2WAY FV NEW", "SAM FEED HOSE", "6800 DRAIN LEVER", "W/P OF FILTER", "HAIER SEMI LF(O)", "BOSCH DOOR LOCK", "COVER FLT 6.5KG", "COVER W/P BLOOM WASH", "HAIER ST(O)", "SPIN LID VOLTAS BEKO(FAST DRY)", "GHANTI FILTER FRAME (TOPA)", "655 BELT", "A24 BELT", "LG 40M WT", "OTB UNIVERSAL 9KG", "SWIFT GADA", "BOSCH LIQUID", "IFB DOOR FRAME CHROME", "PCB SAM (INVERTER) 11SW", "IFB FV(O)", "6800 WT", "GHANTI SWING MOTOR HOUSING", "W/P MAGIC FILTER 9KG", "MAGNATRONE", "NA GB", "GROMET W/P", "ARROW SAM", "BRAKE WHEEL GOD", "W/P 11KG GADA", "W/P MEMRAN", "VID D,BELLOW(O)", "ONIDA PULSATOR", "BPL WT", "VID SM 45W", "HAIER FULLY D,ASSY", "WIND JET DRY SPIN LID 1020(O)", "PCB LG 10SW", "A/C SERVICE COVER", "GOD MAIN MOTOR", "200W WASH MOTOR", "800PD WT", "GOD 7002 WT", "W/P SEMI LF", "SCREW DRIVER 5150", "GOD D,BELLOW", "LG WM (WITH JACK)", "6800 FEED HOSE", "SA63 WT 15M(N)", "VID 21\" SUSP", "GOD M,PULLY", "1003 PULSATOR", "PCB SAM 14SW", "6800 OF HOSE", "SPIDER IFB 6KG (O)", "PCB SAM 12SW", "BRAKE WHEEL HAIER", "SPIDER PANASONIC 5/6", "DOOR SWITCH SAM", "IFB DRIER BELT", "PCB LLOYD", "BRAKE PLATE W/P", "GHANTI SWING MOTOR(WITH HOUSING)", "LG ADAPTOR WITH FILTER(O)", "WD40 (BIG)", "FEED HOSE (FLT)", "LG DD SENSOR 2001", "LG SEMI SUSP(9KG)", "SAFETY SWITCH GOD", "W/P 11KG BELT", "SAFETY SWITCH", "LLOYD PULSATOR(4 LEAF)", "BOSCH FLT SUSP (3*1 SET)", "RECONNECT PULSATOR", "LG FLT OILSEAL", "COVER IFB(O) 5-6KG", "HEATER LG", "HAIER DA(3WIRE)", "W/P SM  9KG (O)", "BOSCH MAGIC FILTER BIG", "VID HUB 6ARM", "LG RAT MASE", "GOD WM 90W", "PCB LG 12V 11SW", "IFB CAPACITOR", "400T OF HOSE A", "720 BELT", "IVORY PS", "SAM PUMP DBL", "T SPANNER 13MM", "ACE COCK FRAME", "D,LEVER GOD 950", "W/P WM 150W(O)", "GOD FEED HOSE", "2320 BELT", "PCB LG INVERTER", "INNER LID CROMA", "1007 PULSATOR", "SPIDER IFB ULTRA 8KG", "PANASONIC WT 35M", "CABLE TIE 200MM", "W/P SEMI D,BELLOW", "SAM GB 10.5KG", "LG MAIN MOTOR(INVERTER)", "SPIN CAP", "A694 BELT", "VESTAR PULSATOR", "HAIER PULSATOR (DIXON)", "D,SET SAM NEW", "W/P BIG IMP PULLY", "S60 WT", "TUB SUPPORT ASSY-123", "LG DD DA", "FA71 PULSATOR", "COVER IFB(O)", "IFB 3WAY FV (O)", "OTB LG (O) WITH HOLDER", "6201 WT(O)", "IFB DOOR HANDLE (BLACK)", "25MFD CAPACITOR", "LG FLT SUSP(O)", "SS TROLLY SEMI", "2002 PULSATOR", "PANASONIC DA", "1006 PULSATOR", "GHANTI SWING MOTOR (SYSCON)", "123 HUB(L)", "BODY   W/P  L1", "BPL DORI", "W/P PCB(R)", "1306 BELT", "60HBT GB", "PLIER", "6800DX SW BODY", "OVEN TT RING", "DISHWASHER KIT", "KELVINATOR PULSATOR", "COVER FLT 5.5KG", "A/C COVER(INDOOR) 44''", "HAIER PS(O)", "IFB DRIER SPIGOT", "COVER W/P 7.2/7.5KG", "SPIN LID 9031", "LLOYD DOOR LOCK", "ELENA OIL SEAL", "A/C COVER(OUTDOOR)", "MARQ PULSATOR  BIG", "SNAP SAM(ROUND)", "BRAKE WHEEL VID", "VIRAT PULSATOR", "PCB", "SPIDER BPL", "PULLY NUT", "LG DOOR SPRING(FULLY)", "A28 BELT", "W/P OF HOSE B", "SPIN CAP INTEX", "SAM SAFETY SWITCH BIG", "BRUSH(BIG)", "LG DBL 15M 4W WT(O)", "TCL GB", "COVER LG FULLY 9KG", "LG SEMI PCB", "GOD FULLY PULSATOR", "KNOB HAIER", "COOLER PUMP 12W", "ROZA 35M WT", "SAM MAGIC FILTER(9KG)", "GEM GB", "VOLTAS ST 10MIN", "INNER LID 6000", "811 PULSATOR", "LLOYD D,BELLOW", "LG PUMP  NEW 1006", "HAIER MAGIC FILTER(O) 9KG", "LG 9KG PULSATOR(O)", "PANASONIC PULSATOR 10KG", "D,SET VOLTAS FULLY", "VOLTAS GB", "IFB OIL SEAL BIG", "SPIDER IFB 8KG", "D,SET ONIDA FULLY", "INLET SEMI W/P(RedBull)", "SAM SEMI D,ASSY", "SAM FLT DOOR SWITCH", "LG 12V FV (FLT-4WAY)", "LG 12V FV (2 COIL) RED+BLUE - (LOT)", "W/P 2WAY FV", "COVER SAM NEW MODEL", "W/P 15M DBL WT", "SAM GASKET(3197)", "GHANTI CHAMBER KNOB", "SIEMENS DESCALE", "M2 PCB", "INNER LID LG NEW", "PCB (REPEAT)", "IFB POWER BOARD", "IFB HUB 6ARM", "BRAKE PLATE SPRING", "METAL TROLLY 1051", "MS FIX STAND", "COVER LG FULLY 8KG", "TCL ROLLER PULSATOR", "METAL STAND", "OVEN PCB (UNIVERSAL)", "IFB SUSP SPRING", "MAGNATRONE (O) 22B", "LG HANDLE SET 9KG", "IFB DOOR HANDLE (GREY)", "DG ONE PULSATOR", "VID FLOWER", "OTB 60HBT(BIG BUSH)", "GOD DA(EON)", "IFB FLT SUSP (GREEN)", "6000 SPIN TUB", "IFB PULSATOR", "SAFETY SWITCH VID", "SPIDER IFB ELENA", "SPIDER SAM 14370", "LG MAIN MOTOR (O) 3004", "VID 5FLOWER PULSATOR", "LG FILTER FRAME", "SIEMENS PUMP (BLACK)", "1208 BELT", "SS TROLLY FULLY", "SPIN LID SAM 1915", "6502 ST", "MECH GOD", "SPIDER BOSCH", "IFB BEARING SET 6KG_x0002_", "BOSCH PULSATOR  (TRIANGLE)", "LG DD DOOR LOCK", "6800 SUSP", "GHANTI JALI(MILSET)", "KNOB VOLTAS", "MAGNATRONE 410", "GREASE(100gm),", "D,LEVER SAM NEW", "SAM 3WAY FV (O)", "INNER LID LG", "PRE-FILTER", "SPIN LID HAIER", "LG FULLY ELBOW(WITH RUBBER)", "6000 GB(SR)", "DG NEMO PULSATOR", "815 BELT", "400T ST", "SPIN LID W/P ACE", "STUBY 220", "COVER SAM", "W/P BLK RING", "GOD B TO D PIPE (EON)", "672 BELT", "1215 BELT(FENNER)", "MAGNATRONE 213", "VIRAT GB(O)", "ONIDA DA", "22/550 BELT", "MARQ PULSATOR 6 LEAF SMALL", "1270 BELT", "T-SERIES WT 35M", "OTB 200T", "620 BELT", "HAIER PUMP", "IFB AQUA PULSATOR", "PRESSURE SWITCH CONNECTOR(SHORT) SAM", "DG OCEAN PULSATOR", "W/P PLATFORM PS", "W/P SEMI SUSP (O)", "THELI", "400T PULSATOR", "INNER LID 6201", "SAM PUMP", "VID 24\" SUSP", "OTB SAM", "VIRAT GB", "PULSATOR", "IFB BUSH", "540 BELT", "PANASONIC OIL SEAL", "Allen Key 5MM", "W/P FV(L)", "SUSP RUBBER", "IFB PULLEY", "NOSE PLIER", "HAIER SEMI PULSATOR", "PCB GOD (W/O DISPLAY) 4SW", "ACE LF", "DOOR SWITCH GOD(SEMI)", "VIRAT D,BELLOW", "Tester", "5200 PCB", "MECH SAM 9KG", "7002 PULSATOR", "COVER SAM FLT 8KG", "GHANTI PCB(SYSCON)", "PCB BOSCH", "LG 12V FV (BLUE COIL)(O)", "OVEN DOOR HING", "6000 35M WT(O)", "2180 BELT", "KNOB GOD GDS800", "SAM DOOR SWITCH (SEMI)", "SIEMENS PS", "SAM DOOR SWITCH (FULLY-BIG)", "SAM DUMP VALVE", "IFB TR(O) TL", "PCB SAM 11PIN", "ACE D,ASSY", "LG OLD D,BELLOW(O)", "6201 SUSP", "HAIER FV", "Allen Key 4MM", "OTB 6201(O)", "HAIER MAGIC FILTER(O) 8KG", "HAIER PS(399A)", "LG WIREING(1003)", "TCL ROLLER PULSATOR BIG 15''", "PCB LG 4SW", "INNER LID LG BIG", "TCL 15M 6W WT", "UNI. OTB SMALL(BIG HOLE)", "WASHER(MECH)", "6800 COMPLETE D,ASSY", "GOD WM(O)", "PCB LG", "COVER IFB FL 8KG", "SAM SAFETY SWITCH SMALL", "HAIER FLT PS(399A)", "ONIDA PS", "SLOT SENSOR", "COVER W/P", "LG POWER BOARD", "IFB ULTRA TUB HOSE", "BPL DOOR HING", "PCB GOD (WITH DISPLAY) 5SW", "CROMA PULSATOR", "P.CAP SAM", "DISHWASHER KIT EFFIWASH", "SPIDER SIMANS IQ100", "PCB SAM ACTIVE (9 SOCKET)", "IFB DRIER LOCK", "GOD SM 6801 60W", "SPIDER IFB ELENA DX", "INNER LID LG (O)", "W/P 8KG PS", "SAFETY SWITCH GOD FULLY", "W/P B TO D PIPE (G62)", "GOD SM 6001", "LG SM 105W", "GLASS FRESH & CLEAN", "SCREW DRIVER(HEX) 5MM", "LG OIL SEAL SMALL", "200T IBC", "LG FLT 2MTR OUTLATE(WITH ELBOW)", "SPIDER LG(1008)", "MAGNATRONE (O) 1958", "LG 9KG D,BELLOW", "W/P LONG WIRE PS", "SAM SPIN SPLIDER SET", "A27 BELT", "AIR HOSE", "SAM B TO D PIPE 9KG", "SPIDER IFB ULTRA 7KG(2 HOLE)", "SPIDER HAIER 6KG", "BOSCH FLT LEG", "IFB PUMP BIG", "LLOYD SEMI PULSATOR", "SAFETY SWITCH LLOYD SEMI", "DE-RUSTER LYGINIC", "SIEMENS FLT SUSP", "8.5MFD CAPACITOR", "D,SET  FULLY", "W/P ADAPTOR SMALL", "SAM DOOR HANDLE", "VOLTAS FV(BEKO)", "PANASONIC MAGIC FILTER", "KNOB VID", "COVER W/P STAIN WASH 7.2KG", "GOD SM 7002", "HEATER LG BIG", "HAIER DOOR LOCK (O)128D", "LLOYD PS (3 PIN)", "VOLTAS/HAIER PULSATOR", "W/P FULLU D,BELLOW", "D,SET VID OLD", "COVER IFB TL 7KG", "W/P 9KG GB", "IFB ULTRA OIL SEAL BIG", "OUTLATE RING", "ADAPTOR SINGLE SCREW TRF", "INNER LID 6800", "MECH GOD(O)", "BACK COVER LG SEMI", "GOD SUSP", "230V TT MOTOR", "DG MARINE PS", "6201 D,ASSY", "LLOYD SEMI SUSP", "W/P M PULLY SEMI", "6102 WT(O)", "1205 BELT", "MECH BOSCH  (8KG)", "HAIER PULSATOR(O)", "GOD HUB", "LG M,PULLY SMALL", "EKL PULSATOR", "LG FILTER FRAME (ROUND FILTER)", "SMART 5 FLOWER PULSATOR", "W/P TROLLY(O)", "OTB UNIVERSAL(SMALL BUSH)", "CLUTCH SPRING", "SPIDER IFB  (O)", "20MFD CAPACITOR", "650 BELT", "XD 41 GB(GEAR ON)", "SAM GB (XD)", "VIRAT M,PULLY", "WM20 BELT", "HALL SENSOR 2002", "11MFD CAPACITOR(IFB)", "VOLTAS FV", "MECH HAIER (HALF PLAT)", "IFB PUMP FILTER", "UNI. OTB(C)", "OVEN RING", "ARROW ONIDA", "KNOB ONIDA WASHER", "TM DA", "SCREW DRIVER 6150 (I)", "SCREW DRIVER(HEX) 4MM", "DESCALE BOX", "MIDEA FV", "680E BELT", "DOOR SWITCH GOD", "OTB 6201", "LG B TO D PIPE 9KG", "MECH HAIER (O) HALF PLAT", "MOTOR", "RUSTAINO", "IFB BEARING SET", "INTEX DA", "780 BELT", "SPIN LID VOLTAS", "7202 GB", "INNER LID ACE", "MARQ PULSATOR", "SAM GB  (NEW)", "W/P WM 10KG(O)", "HAIER SUSP 19.5''", "MECH SAM  (R)", "VID HUB", "40LTR FOLDED HOSE", "6800 15M WT(N)", "IFB WAFFLE SMALL", "MARQ WT 15M 7W", "HAIER FV(INVERTER)", "INNER LID SAM SMALL", "HAIER OF HOSE", "SAM 40M WT", "DOOR SWITCH VID", "DRAIN BELLOW", "TVS M,PULLY", "HEATER LG SMALL", "HEATER IFB", "22.6 BELT", "1311 FEED HOSE", "OTB GOD GDS820/950", "GOD ST", "EXT. PIPE 3MTR", "HAIER SUSP", "HAIER SEMI D,ASSY", "PCB GOD", "PANASONIC GB", "DOOR SWITCH IFB", "MECH IFB HALF(FRESH)", "MED PCB", "LG COCK LID", "HAIER D,ASSY", "IFB DOOR HING (BIG-30K)", "IFB DOOR HANDLE(TRIANGLE) WHITE", "KNOB SAM(7400)", "SPIN LID SAM SMALL", "SAM CROSS WT 15M", "675 BELT", "MAGNATRONE W/P(O)", "GHANTI WHEEL(WHITE)", "PCB SAM (GREEN) (O)", "1004 PULSATOR", "LG GASKET", "SWIFT HUB(O)", "SAM SAFETY SWITCH", "ECO WASH GB(SR)", "6000 D,LEVER+HOLDER(SET)", "BOSCH PUMP(O)", "IFB TUB (FL) 7KG 041", "LG WIREING(6023)", "BOSCH DOOR LOCK  IQ500", "LG SM 9KG(O)", "FLT TROLLY 17*24", "INNER LID 8003", "W/P BUZZER", "COVER IFB FL 7KG", "W/P MAGIC FILTER", "LG SEMI D,BELLOW(9KG)", "W/P MAGIC FILTER 9KG(O)", "LG OIL SEAL SMALL(IMP)", "VID MAGIC FILTER", "OTB SAM 6500(O)", "WM21 BELT", "GDS820 PULSATOR", "DISH WASHER TABLET", "LG FILTER  PCB(O)", "IFB COMMON CARD (6PIN)", "KELVINATOR GB", "WWM SUSP LONG", "FLT TROLLY 24*24", "SAM TUB HOSE", "BRAKE WIRE LG", "GOD SEMI SUSP 6201", "SAM WM NEW", "VOLTAS ROLLER PULSATOR", "LG M,PULLY", "PCB HAIER (4FL)", "SPIN CAP VOLTAS", "BPL IBC", "PCB ORNA", "WM26 BELT", "LG NEW GB(XD)", "DG WAVE OF HOSE", "PCB UNIVERSAL(3388)", "A/C COVER(INDOOR) 36''", "LG PS  (O) 10KG", "GHANTI SWING MOTOR (MICRO)", "INNER LID SAM 11KG", "VIRAT SPIN TUB", "SAM 15M CROSS WT", "D,LEVER", "HAIER DA(WITH D,ASSY)", "DYNEX PULSATOR", "C PIPE IFB", "S PIPE", "1003 SWITCH BODY", "INNER LID LG SMALL", "BPL PS(ABS50)", "IFB TUB (FL) 9KG", "W/P FLT FV(O)", "MAGNATRONE 410 GLANZ", "W/P SM 10KG", "IFB DRIER THERMOSTAT", "OTB 16 TEETH", "W/P WASHER", "ONIDA GREY PULSATOR", "A680 BELT", "SCREW DRIVER 6250(T)", "PCB IFB (FL)", "HALL SENSOR SAM", "MECH LG  INVERTER 9KG", "LG SENSOR", "INTEX LF", "HAIER FLT PS (1009C)", "LG SEMI LID SWITCH", "6207 HCH", "LG OIL SEAL 7KG (IMP)", "HAIER OILSEAL 6KG", "ONIDA GB(GEAR ON)", "SPIN CAP BPL", "KNOB ONIDA", "LYGINIC LIQUID(5 LTR)", "LG FILTER FRAME(O)", "LG BIG ROLLER PULSATOR(O)", "LLOYD SEMI PULSATOR GREEN", "BPL DOOR LOCK", "IFB 2MTR OUTLATE(GOD)", "IFB 3MTR OUTLATE(GOD)", "PCB UNIVERSAL (6688) DVM", "LG ELEMENT SENSOR", "SAM FULLY DRAIN ASSEMBLY CLAMP", "SAM DOOR SPRING(FULLY)", "V BELT MIX(O)", "SPIN LID 6800", "DRAIN SPRING 811", "811 OIL SEAL", "PULSATOR SCREW (IFB)", "GHANTI CHAMBER LOCK", "GOD NEW GB", "IFB DRIER KNOB", "LG SM(R)", "SAM TUB", "6000 D,ASSY", "COVER FULLY(PRINTED)", "COVER IFB TL", "COVER FULLY 8KG", "BODY  LG", "7002 WT(9 WIRE)", "WYBER 15M WT", "VOLTAS PUMP", "LG MAIN MOTOR 84W", "SNAP LG 9KG", "SIEMENS DOOR HING", "SAFETY SWITCH IFB", "TOSHIBA PULSATOR", "6201 PULSATOR(O)", "6800 SWITCH BODY", "ONIDA 35M WT(OLD)", "VID D,BELLO OLD(O)", "LG SMALL PULSATOR", "ADAPTOR CHAIN", "6013 WT", "WASH LID W/P", "LLOYD DA BLK", "INTEX PULSATOR", "8502 WT 35M", "W/P SUSP", "MAGNATRONE 246(O)", "SAM RAT MASE NEW", "Y HOSE SAM (LONG)", "VID SM(COPPER)", "NIWA WT", "COOLER PUMP", "BRAKE PLATE GOD", "LG HYDROLIC DOOR CLAMP", "A600 BELT", "LG ARROW(O)", "MAGNATRONE W/P 214 TYPE(O)", "180W MAIN MOTOR", "HAIER PS BLACK (2 PIN) (O)", "CROMA PULSATOR BIG", "ORANGE BOX TROLLY", "700T JOINTER", "HEATER W/P", "BOSCH PUMP", "MECH ONIDA HALF(NEW MODEL)(FRESH)", "IFB CROMA HANDLE BIG", "LG NEW GB (O) WITH PULLY", "HAIER SENSOR(2644A)", "MECH ONIDA (CRYSTAL)", "DOOR SWITCH VOLTAS", "D,SET HAIER FULLY", "1136 SW BODY", "1332 BELT", "FAN MOTOR", "WM19 BELT", "LG SEMI SUSP (O)", "W/P FILTER FRAME WITH BRASS", "IFB SUSP  TL (24.5'')", "PULLER", "GOD D,LIVER", "IFB PUMP WITH FILTER", "742 BELT", "OVEN PCB", "IFB PCB(R)", "GOD DOOR LOCK", "Tozzle Wash LIQUID DESCALE(400ml)", "DG MARINE PULSATOR", "LG 4WAY FV", "SPIN LID VIRAT", "W/P DA", "FEED HOSE 6\"", "KNOB GOD 8502", "VID DA", "BOSCH GASKET", "MULTI METER WIRE", "W/P GB BLUE(O)", "LG KNOB(O) 2002", "GHANTI SENSOR", "A/C COVER(INDOOR)", "A/C COVER(INDOOR) 48''", "W/P FLT CAPACITOR(O)", "MAGNATRONE W/P 218 TYPE(O)", "GOD DBL FV", "LG FLT 4WAY FV", "BOSCH PULSATOR (BIGGEST)", "SAM DIXON PULSATOR(GOD)", "PCB LG (DISPLAY) 952", "25/688 BELT(O)", "OUTLATE JOINTER", "ELENA DX DOOR HANDLE", "KNOB MIX", "PANASONIC DA(WHITE)", "FA55 PS", "OTB VOLTAS", "25.5 BELT", "OTB SAM SMALL BUSH", "BODY  LG(FIBER)", "DEFROST SENSOR(1809A)", "MECH SAM INVERTER (6KG)", "GOD SM (O)", "PCB SAM (INVERTER)", "8+6 CAPACITOR", "6800 M,PULLY(BIGGEST)", "SAM DRAIN SET", "SPIDER LG", "FA55 FEED HOSE", "PCB VOLTAS", "HAIER WM(O)", "PCB SAM (INVERTER) 6SW", "INNER LID W/P", "VIRAT D,ASSY", "KNOB GOD 7002", "MHJ PULSATOR(BIG)", "W/P 5PROGRAM WT", "474 BELT", "PANASONIC DOOR HING", "GHANTI CHAMBER RING", "LG DBL 40M WT(O)", "MECH CROMA", "MAGNATRONE (O) A003D", "IFB ON/OFF SWITCH 4PIN", "SPIDER SIMANS", "COVER FLT 6KG", "GHANTI WHEEL(NATRAJ)", "LLOYD SEMI D,ASSY", "SAM SEMI SUSP 9KG", "9.5+5 DUAL CAPACITOR(O) W/P", "PCB LG (DISPLAY)", "LG WIREING(5004)", "55HBT OTB", "DOOR SWITCH LG", "601 PULSATOR", "LG WIREING", "BALANCER RING SAM(FULLY)", "LG DD DOOR LOCK 8KG", "COVER SAM ACTIVE 11KG", "SPIDER SAM 15184", "HAIER DESCALE(COMBO)", "SPIDER HAIER 7KG", "HAIER PULSATOR(O)1576", "INTEX 15M 8W WT", "MAIN CORD LG", "KENSTAR GB", "ONIDA GB(GOD)", "A30 BELT", "HAIER FULLY PULSATOR", "SPIDER IFB (IMP)", "LG DRAIN SWITCH", "1246 BELT", "IFB GASKET 330", "SAM MAIN MOTOR(O)", "D,LEVER W/P 9KG", "550 BELT", "EKL B TO D PIPE", "OVEN STAND(MO70)WALL MOUNT", "EKL SEMI SUSP", "SPIN LID INTEX", "LG OF FILTER SMALL", "LLOYD BALANCER RING", "MAGNATRONE 410(O)", "2400 TUB HOSE", "SAM I,PULLY", "EKL DRAIN SWITCH", "SEMI SUSP", "LG FLT HANDEL SET", "GOD SEMI SUSP", "LG PUMP DBL", "TCL LF", "IFB PCB(R) FL", "SIEMENS PUMP (WHITE)", "COVER SAM FLT 7KG", "LG FEED HOSE(FULLY-WITH RUBBER)", "LG FLT 3WAY FV(O)", "VARI HTR 360 PCB", "INNER LID VIRAT", "COVER FLT", "ONIDA 15M 6W WT", "STUBY 330", "MECH HAIER (O) FULL PLAT", "HAIER PS(1009B)", "533 BELT", "OVEN TEMP. SENSOR", "SAM DRAIN BELOW (ORG)", "LG SM 90W", "HAIER PULSATOR NEW", "Y PIPE LG(BIG)", "UNI. PS", "LG SM (OM)", "SPIDER IFB 8KG (2 HOLE)", "SAM 3WAY FV (O) GREY", "IFB DRIER INNER PULLEY", "SCREW DRIVER 6100 (I)", "SPIDER IFB (2 HOLE) 4/5", "36T WT", "SAM FLT DOOR LOCK", "COVER IFB TL 8KG", "COVER IFB BOSCH", "GOD PULSATOR", "IFB DOOR LOCK NEW", "IFB TUB (FL) 8KG 071", "STUBY 600", "LG 12V FV (3-BLUE COIL)", "IFB BIG PULSATOR", "11+5 CAPACITOR", "KNOB ZARA", "HAIER SENSOR(2186A)", "HAIER GB(O)", "MARQ T HING", "W/P SUSP HOLDER", "A/S GADA", "W/P ACE SUSP", "W/P SUSP RUBBER", "SA63 15M 4W WT", "PCB SAM FLT", "LG DRAIN SWITCH BIG", "LG SNAP LOCK", "BOSCH FV (WITH FLOW METER)", "PCB HAIER (138KA)", "L4 GADA(SET)", "SPIDER IFB (2 HOLE) 5/6", "6800 WM(COPPER)", "801 ST", "200T WT", "6000 D,LEVER HOLDER", "LG FLT DOOR HANDLE", "SPIDER SAM 15185", "ONIDA D,ASSY", "WIND JET DRY SPIN LID(TRF)", "LG 12V FV (4 COIL)", "IFB ULTRA TUB HOSE WITH BALL", "W/P SM 45W", "6000 COCK FRAME", "SAM 9KG ROLLER", "6050 WT", "PCB PANASONIC", "W/P 24'' PS", "400T DRAIN SET", "IFB OIL SEAL SMALL", "OVEN TIMER", "LG MAIN MOTOR (O)", "HALL SENSOR 2001(O)", "2330 BELT", "GOD SEMI SUSP 6502", "KNOB PANASONIC", "695 BELT", "585 BELT", "LG GASKET 8KG", "LLOYD M,PULLY", "HAIER PULSATOR(BLUE RIB)", "MECH BOSCH", "WIND JET DRY SPIN LID 1022(O)", "T SPANNER 12MM", "HAIER SENSOR(2187A)", "LG FLT 5WAY FV", "LG 12V FV (3-BLUE COIL)(O)", "60E WT", "W/P DOOR HOOK", "801 PULSATOR", "BRAKE SPRING SAM", "W/P OF FILTER FRAME(9KG)", "VOLTAS 15M 7W WT", "PCB SAM ACTIVE(10 SOCKET)", "BOSCH SENSOR", "SS TROLLY  (24 WHEEL)", "LG SM 40W(O) 1004K", "811 D,ASSY", "IFB GASKET(O)", "VID OF HOSE", "SIEMENS GASKET", "GOD DA(701)", "LG RAT MASE(O)", "PCB SAM 7PIN", "SAM SUSP 11KG (25'')", "W/P SEMI SUSP (O)XL", "150W WASH MOTOR", "IFB STEEL TUB FOLDED HOSE", "5800 PULSATOR", "A660 BELT", "6000 SM(R)", "COVER FULLY 9KG", "GOD WM 150W", "LG 12V FV (RED COIL)", "6307 SKF", "55HBT GB(GEAR ON)", "HIGH PCB", "GHANTI COVER", "MAGNATRONE W/P", "PCB CONNECTOR", "6000 15M WT(O)", "LG NEW KNOB(O)", "200T D,BELLOW", "WM32 BELT", "6000 LF", "A21 BELT", "KNOB SAM(8700)", "W/P SM 11KG", "BPL CONNECTION WIRE", "GB WISER", "8002 PULSATOR", "WM25 BELT", "KNOB ONIDA NEW", "LLOYD HUB(6 ARM)", "SPIN LID LG 9KG(O)", "HAIER MAGIC FILTER(O) SEMI", "VOLTAS 35 DBL WT", "HAIER OILSEAL BIG", "HAIER SEMI SUSP", "IFB BEARING SET 9KG", "KNOB GOD CHROME(O)", "BOSCH PULSATOR  8KG", "IFB DRIER THERMOSTAT HOT", "IFB DRIER THERMOSTAT HOT SAFETY", "PULLY BOLT", "OUTLATE BOSCH (FLT)", "COVER SAM 8KG", "HOOKA PIPE", "A670 BELT", "COVER IFB FL 6KG", "1276 BELT", "0001 PULSATOR(O)", "L1 HUB", "CABLE TIE 150MM", "MECH LG  INVERTER (DR)", "PANASONIC DA(O)", "METAL TROLLY 6800", "CHANDNI PULSATOR", "ROLLER SAM(O)", "W/P DBL 7W 35M WT", "VID SMART PULSATOR", "LG OLD GB(GOD)", "COOLER SWING MOTOR", "ONIDA I,PULLY", "COVER FULLY 9KG PLAN", "W/P PS(NEW)", "HAIER PS(1009A)", "GHANTI WHEEL", "SPIDER BOSCH IQ 500", "OIL SEAL 40-80-10", "130W MAIN MOTOR", "HAIER BOTTLE GUARD", "SS TROLLY SEMI (BIG)", "735 BELT", "11+4 CAPACITOR", "PCB VID", "LG ACT LEVER", "USER BOARD(LOW)", "SPIN LID GOD AXIS", "ZARA MAGIC FILTER", "DRAIN RING", "SAM FLT DOOR HANDLE", "VID SM (OM)", "IFB B TO D PIPE LONG", "IFB DRIER SUPPORT BEARING BUSH", "HAIER DOOR LOCK (O)128R", "SIEMENS DOOR LOCK (ROHS)", "D,SET CROMA FULLY", "MECH 811(O)", "OVEN STAND", "PCB ONIDA", "D,LEVER LLOYD", "A23 BELT", "PCB (R)", "LLOYD FULLY D,ASSY", "GRACIA PULSATOR", "PRESSURE SWITCH", "VOLTAS 15 DBL WT", "OIL SEAL 35-65-55", "LG TUB FL", "W/P GB BLUE", "D,SET LLOYD FULLY", "INNER LID SAM", "D,LEVER VID", "GOD WM", "FEED HOSE 3''", "IFB DRIER SWITCH", "BODY CORNER LG", "COVER IFB FL", "W/P STAND(O)", "6800 ACT LEVER", "SAM DOOR HING", "SAM WM (THREADED SHAFT)", "BOSCH SUSP SPRING(SET)", "LG SEMI DOOR SWITCH", "IFB WIRING", "PCB HAIER (4PC)", "WM650 BELT", "IFB DRIER I,PULLY", "SPIN CAP 200T", "D,LEVER MIX", "6800DX FEED HOSE", "LG DOOR HING 2002", "LG M,PULLY (FULLY)", "ONIDA 15M WT", "INTEX MAGIC FILTER", "BOSCH OILSEAL", "LLOYD GB(BIG PULLEY)", "MAGNATRONE SAM", "HAIER FLT 2WAY FV(O)", "SAM OIL SEAL 7KG", "XD33 GB", "IFB GASKET  UNIVERSAL", "6000 WM(O)", "IFB AIR TRAPE", "LG CAPACITOR(O) 9.5+4", "MECH LG  INVERTER (DVM)", "SAM SM 9KG", "SAM DRAIN LEVER", "COVER IFB TL 6KG", "ARROW VID", "MECH LG(HILLS)", "COOLER PUMP 40W", "PANASONIC GB(GOD)", "SIEMENS GASKET(IQ 500)", "SAM ROLLER PULSATOR 9KG(ROUND SNAP)", "1281 BELT", "CROMA DA BIG", "METAL TROLLY 32*19", "35T WT", "A29 BELT", "6000 15M WT", "VIRAT BAL. RING", "801 LF", "SERINA FEED HOSE", "12+4 CAPACITOR", "SIEMENS 2WAY FV", "GHANTI FILTER(SET)", "LLOYD PUMP", "LG OIL SEAL 8KG", "LG WM (OM)", "LG WIREING(6018)", "COCK LID", "BOSCH GASKET IQ500", "PCB HAIER (4PE)", "VOLTAS SM  BEKO 60W", "SPIDER LG (1301) LONG ARM", "2340 BELT", "A32 BELT", "811 MAIN MOTOR", "BRAKE PLATE", "PULSATOR CAP LG", "LG OF FILTER SMALL(O)", "IFB FV(GRAY)", "PANASONIC BAL. RING", "A/C COVER(OUTDOOR) NEW", "SAM B WHEEL", "SPIDER IFB 6KG(IMP)", "OTB HAIER(O)", "685 BELT", "PANASONIC 3WAY FV", "ONIDA D,LEVER WITH COVER", "METAL TROLLY 15125", "8502 GB(O)", "LG OF HOSE BLUE", "EKL PS", "IFB NEXT GEN FOLDED HOSE", "FEED HOSE FA55", "GOD 7002 LF", "801 SM", "COOLER WHEEL", "GLASS TRY", "8+4 CAPACITOR", "COVER 6800", "OVEN PCB (R)", "IFB DIGITAL DOOR LOCK", "WISPRO", "1258 BELT", "IFB SUSP  TL (23.5'')", "CHANDNI LID HOOK", "GHANTI WHEEL(BLACK)", "GHANTI WIRE", "PCB W/P (3500)", "SAM FLT OUTLATE", "W/P AIR HOSE", "PCB PANASONIC 4SW", "W/P COCK FRAME", "TCL PULSATOR", "ROZA DBL WT", "200T I,PULLY", "123 PULSATOR", "DG MARINE PCB", "L3 PCB", "PANASONIC PCB(R)", "SPIN LID SAM", "801 DRAIN SWITCH", "VID D,ASSY", "BOSCH DOOR LOCK(SMALL)", "BOLT", "D,LEVER BPL", "COVER LG FULLY 10KG", "PANASONIC PS(SMALL)", "MECH HAIER (O)", "HAIER SUSP(O)", "ONIDA PULSATOR SPLENDOR", "800PD FILTER FRAME", "LG PUMP FILTER", "ONIDA WT", "21.5 BELT", "GOD MEMRAN", "BRAKE WIRE VID", "MITASHI PULSATOR", "W/P CASTOR", "MECH MARQ(CRYSTAL)", "LG SCALEGONE(COMBO)(O)", "COVER FLT 6KG(PLAN)", "CABLE TIE 100MM", "SAM 35M WT", "GHANTI WHEEL HOLDER", "SPIDER VOLTAS", "PANASONIC PS (2 PIN)", "MECH HAIER (FULL PLAT)", "SAFETY SWITCH LLOYD", "LG MAIN MOTOR (BEARING)", "LLOYD D,ASSY", "ONIDA IBC", "LG DD SWITCH TL", "FEED HOSE (3FEET)", "MECH HAIER (S/G)", "BPL DOOR HING(BIG)", "SAM SM(OM)", "VOLTAS DA (BEKO)", "HAIER DOOR LOCK(O)", "LG HUB(O)", "SPIDER IFB (2 HOLE)", "LG PUMP  DC", "DIVA TUB HOSE", "INTEX SEMI SUSP", "7002 D,ASSY", "6800 15M WT(O)", "MECH LG SINGLE GEAR", "WM680 BELT", "PCB LG FLT", "LLOYD 35M 8W WT", "ONIDA SUSP", "BODY PANASONIC (FIBER)", "IFB FL MOTOR(O)", "KNOB W/P E50", "BODY  SAM(FIBER)", "ARROW VID ROZA", "W/P DBL 7W 15M WT", "GOD SM", "MULTI DLX FEED HOSE", "DRAIN SWITCH", "LLOYD PS (NEW)", "653 BELT", "LCD STAND-121", "COVER W/P 9KG", "HAIER FULLY LF(O)", "SPIN CAP ONIDA", "D,SET VIRAT", "SPIN CAP LG (O)", "DOOR SWITCH 400T", "PCB SAM (INVERTER) 12SW", "SPIN LID 1020(O)", "SPIN CAP SAM", "SWIFT PCB", "ROBERT SHOW PS", "400T BUZZER", "PCB LG DD", "SPIDER LG 2001", "IFB WAFFLE BIG", "COVER SAM FLT 12KG", "OVEN DOOR HOOK(W/P)", "530 BELT", "PCB SAM 18SW", "IFB CARBON SET(ITALY)", "SPIDER IFB ELENA DX 5/6", "W/P SEMI D,ASSY", "OMEX STAND (CLOTH)", "SPIDER MARQ", "HAIER FEED HOSE", "745 BELT", "IFB TUB HOSE", "LG 9KG PULSATOR", "PANASONIC SUSP(WHITE)", "BPL IMP. PULLY", "60HBT OTB", "7501 PULSATOR", "GDS820 GB", "KNOB VID ZARA", "LG OF FILTER (O)", "PCB W/P DC72", "L2 HUB(L)", "IFB SPRING", "LG FLT DOOR HANDLE 9KG", "LLOYD SAFETY SWITCH", "LG OIL SEAL 10/11KG", "SAM FULLY PULSATOR (9KG)", "SAM ROLLER PULSATOR (O)", "PCB LG (DISPLAY) 920", "W/P SPLUCH PULLY", "FLT TROLLY 19*24", "METAL TROLLY 24*24", "MECH U SONIC(FRESH)", "OVERFLOW HOSE", "SAM 4PIN WT", "LG OLD GB(XD)", "SPIN LID LG 9KG", "1333 BELT", "IFB SANATOR TUB HOSE", "635 BELT", "VID PCB(R)", "PCB W/P CL6SA", "PCB W/P 6BA", "6000 SWITCH BODY", "5300 PS", "W/P G54 HUB", "PANASONIC DA(NAKAGAWA)", "SPIDER IFB ULTRA   (O)", "IFB FLT MOTOR", "W/P COCK LID", "LG PULSATOR", "W/P 35M DBL WT", "SPIN LID LG(O)1626", "SPIN LID LG(O)1624", "GOD DIXON PULSATOR", "W/P PULSATOR", "VOLTAS DOOR LOCK(BEKO)", "TOOL BAG NEW", "WWM PS", "IFB ON/OFF SWITCH", "LG OIL SEAL BIG", "9MFD CAPACITOR", "WIND JET DRY WASH LID", "W/P SPLUCH SET", "SUSP BALL", "6800 SM", "ARROW W/P", "SCREW DRIVER", "COVER LG FLT", "ELENA DX DOOR HANDLE BIG", "LG 12V 2WAY FV", "P.CAP W/P", "LLOYD FLT PS", "SCREW DRIVER 6150(T)", "CHANDNI OF HOSE", "60HBT LF", "PCB SAM 6SW", "ONIDA PS(SMALL)", "KNOB W/P 801", "1214 BELT", "ROLLER SAM  (SEMI) 9KG", "GHANTI FILTER FRAME (TOPA)(MICROFINE)", "HAIER DOOR HING", "VOLTAS DA", "LG 12V FV (FLT-2WAY) (O) 1005M", "SAM MAIN MOTOR (INVERTER)", "LG 12V FV (3 COIL) RED+2 BLUE", "VINAM TROLLY", "GOD OLD GB", "IFB 4PIN ON/OFF SWITCH", "240V TT MOTOR", "OTB BPL BS65", "220V TT MOTOR BIG", "CROMA PS", "BACK COVER W/P", "EKL 2WAY FV", "W/P LUMINA PS LONG WIRE", "LID SHOCKET", "WM690 BELT", "BRAKE WIRE SAM", "PCB ONIDA HDE", "LG PCB(R) FL", "PCB LG 11SW", "W/P BRUSH LF", "W/P WM 165W(O)", "TOSHIBA LF", "IFB BAFFLE BIG", "FLEXI MAGIC CORNER", "GOD STEEL KNOB", "6800 WM (OM)", "GOD LID SWITCH", "W/P OF FILTER 9KG", "BOSCH PUMP WHITE", "W/P B TO D PIPE(COMPLETE SET)", "HAIER OILSEAL 7KG", "W/P WIRING(6308)", "SCREW DRIVER 6250(I)", "495 BELT", "12MFD CAPACITOR", "LG DOOR LOCK WIRING(103)", "OTB TVS", "VID WM", "U1 ASSY", "VID D,ASSY COMPLETE", "OVEN GRILL", "COVER SAM FLT 6.5KG", "D,LEVER ONIDA", "COVER LG FULLY 11KG", "PCB UNIVERSAL(999)", "IFB ULTRA FOLDED HOSE", "IFB COMMON CARD ULTRA", "GOD SEMI D,ASSY", "VOLTAS HUB", "LG SMALL PULSATOR(GOD)", "A650 BELT", "1215 BELT", "GOD WM 90W(O)", "SPIN LID 1039", "MAGNATRONE 218", "GOD 6502 DRAIN SWITCH(O)", "LG SPIN TUB", "SAM MAGNET", "COVER W/P BLOOM WASH 9KG", "ONIDA FULLY PULSATOR", "BRAKE PLATE W/P ACE", "SAM 3 ROLLER PULSATOR", "W/P 11KG PULSATOR", "SPIN LID W/P 601", "IFB RECIRCULATION TUBE", "360 PULSATOR", "BOSCH INLET", "BOSCH GASKET NEW", "LG BIG ROLLER PULSATOR(GOD)", "SPIDER PANASONIC 6/7", "HAIER WM 150W", "GOD FLT PS", "IFB FV (FLT)", "1156 BELT", "IFB PICHKARI", "CAPAPCITOR", "IFB FLT SUSP(W)", "ONIDA GB(XD)", "6800 FEED HOSE(SMALL)", "PCB SAM BUBBLE WASH", "560E BELT", "MECH BOSCH(R)", "DOOR SWITCH LLOYD SEMI", "HAIER MAIN MOTOR", "PCB W/P UL62A", "BRAKE WIRE GOD", "SAM FOLDED HOSE", "PCB HAIER (6 PIN)", "THERMOSTATE(1747A)", "HAIER SENSOR(1809A)", "2400 OIL SEAL", "LG LIQUID DESCALE", "W/P ECO-CRYSTAL", "XD34 GB", "IFB DOOR FRAME SILVER", "GOD NEO GB(O)", "BPL PLATE", "2900 TUB HOSE", "SAM SUSP  (O)", "COVER FLT 9KG PLAN", "COVER LG FLT 9KG", "LG DD SWITCH", "HAIER TR(O)", "IFB BUSH (SMALL)", "COVER SAM FLT 9KG", "EKL MEMRAN", "KNOB IFB(WHITE)", "IFB ULTRA DOOR HING", "IFB FOLDED HOSE", "SAM TUB(FLT)", "GHANTI SWING MOTOR HOUSING NATRAJ(O)", "SAM FULLY D.ASSY (9KG)", "BOSCH HUB", "T SPANNER(BOSCH)", "IFB 3WAY FV(WHITE)", "LG FILTER FRAME (MAGIC FILTER)", "MARQ DRAIN SWITCH", "Sanyo IBC", "COVER LG FLT 7KG PLAN", "METAL TROLLY 22*22", "TVS SEMI SUSP", "EKL DA", "6800DX BAL. RING", "GOD 6502 LF", "BRAKE PLATE 400T", "OF HOSE", "W/P SEMI SUSP OLD", "LG BREAK DORI", "6800 DRAIN SET", "LG HYDROLIC SW", "COVER SAM FLT", "D,BELLOW MIX", "DG WAVE OF HOSE B", "GOD PCB(R)", "DG MARINE D,BELLOW", "BRAKE SPRING 6800", "PCB PANASONIC 6SW", "D,SET LLOYD", "IFB BAFFLE SMALL", "CROMA MAGIC LF", "PCB HAIER (4SW)", "DETERGENT BOX SAM", "400T SM (WATERPROOF)", "DEFROST SENSOR INVERTER(1649A)", "HAIER THERMOSTATE", "WIRE", "A640 BELT", "SAM DRAIN SWITCH", "SAM FULLY PULSATOR (OLD MODEL) (GOD)", "IFB SUSP  TL (22'')", "LG OIL SEAL 6KG(O)", "747 BELT", "WIRING IFB", "BRAKE SPRING LG", "LG SM 105W(O)", "IFB DRIER BELT(WHITE)", "11.5+6 CAPACITOR", "14+5 CAPACITOR", "14.5+5 CAPACITOR", "HAIER PULSATOR  (O) 128", "IFB DA (O)", "BACK COVER LG FULLY METAL", "COVER W/P 123/650", "MECH PANASONIC(R)", "ONIDA 35M 7W WT", "OTB 700T", "TCL B TO D PIPE", "SLIDER SPLUTCH", "ROZA D,LEVER HOLDER", "COVER IFB TL 9.5KG", "PCB SAM(FL-INVERTER)", "TOSHIBA DA", "HAIER SENSOR(2184A)", "BPL DOOR SNAP", "BOSCH PUMP BLACK", "MARQ PULSATOR 5 LEAF SMALL", "MARQ PULSATOR 5 LEAF BIG", "IFB GASKET 260", "SAM ROLLER PULSATOR 9KG(GOD)", "SPIN LID LG(O)1812", "SPIN LID LG(O)1625", "INNER LID SAM 9KG", "W/P SM  9KG", "MIDEA SUSP", "1004 SW BODY", "LG WM (R)", "ROZA GB(GOD)", "ROZA SWITCH BODY", "5800 DA", "W/P LUMINA PS", "W/P DRAIN SWITCH", "PANASONIC 4WAY FV", "BACK COVER SAM FULLY", "H80 PCB", "BPL FULLY LF", "LG 9KG OTB(O)", "200T SPIN SHAFT", "PANASONIC WT", "EKL GB", "EKL ST", "8+5 CAPACITOR", "LG FLT OILSEAL 9KG", "SNAP PANASONIC", "MECH BPL(R)", "ROZA LF", "LG M,PULLY(WASH MOTOR)BIG", "HAIER PCB(R)", "588 BELT", "LG POWER BOARD BIG", "W/P 3PROGRAM WT", "LIQUID", "SAM C HOSE", "LLOYD SEMI LID SWITCH", "LG STICKER(644)", "W/P M PULLY", "LG STICKER(645)", "AMAZON PS", "SAM GB 9KG", "LG GASKET (O) 9301", "LG FULLY D.ASSY(9KG)", "PRESSURE SWITCH (1141)", "SAM M,PULLY NEW", "OIL SEAL 35-62-10", "SAM MAGIC FILTER SEMI", "GDS950 WT", "TVS HUB", "DATTA-FIX STAND", "VOLTAS I,PULLY", "715 BELT", "COVER 360 BLOOM WASH", "FA55 OF HOSE", "PCB ORNA NEW", "BOSCH/SIEMENS SCALEGONE", "BODY", "SPIN LID LG(O)1605", "SPIDER IFB ULTRA 8KG(2 HOLE)", "LG KNOB(O) 2537", "LG KNOB(O) 3009", "SAM SPIN TUB", "PCB LG 12V 10SW(O)", "HAIER FAN MOTOR", "ONIDA WM(OM)", "LUMINA SWITCH", "COVER FLT 10KG", "HAIER 2WAY FV(IVERTER)", "HAIER WM 150W (O)", "IFB GASKET 191", "LLOYD GB (CREATIVE)", "LG HYDROLIC DOOR CLAMP (O)", "BOSCH D,ASSY", "LG DA WIREING", "SAM KARSIHMA (R)", "GOD GEARLESS GB", "1324 BELT", "TVS ELBOW", "6005 WT", "HAIER 3WAY FV", "MECH PANASONIC 7KG", "LG DD FOLDED HOSE", "LCD STAND-151", "IFB AQUA TUBE", "LG SPIN TUB(O)", "LLOYD ROLLER PULSATOR(BIG)", "IFB TUB (FL) 7KG 061", "IFB BEARING SET 7KG", "MECH HAIER", "HAIER DOOR LOCK (O)128EB", "LG DOOR LOCK (O)605", "VID FULLY D,BELLOW", "TVS SM (OLD MODEL)", "COVER W/P 6.2/6.5KG", "ONIDA 15M 7W BRACKET WT", "GOD OF HOSE", "811 PS", "FA71 FEED HOSE", "FEED HOSE 5\"", "GOD TROLLY(O)", "SIEMENS DOOR LOCK BIG", "M-SEAL", "KNOB NA", "VID NEW DRAIN SET", "LG STICKER", "BOLT UNI. TROLLY", "GEAR BOX(SR)", "LG NEW KNOB", "LG 12V FV (FLT)", "1661 PULSATOR(O)", "OTB INTEX/TCL", "6800 MAGIC FILTER(WITH FRAME)", "520 BELT", "IFB SMART PLUG", "SENSOR(1808A)", "SENSOR(2187A)", "SENSOR(2184A)", "FUSE WITH CABLE(2644A)", "W/P SM (WATERPROOF)", "BOSCH TUB HOSE (WITH BALL)", "LG FEED HOSE", "IFB ULTRA OIL SEAL 9KG", "O640 BELT", "LG FULLY DRAIN SET", "LYOD GB 1.75 BIG PULLYT\\", "SAFETY SWITCH ONIDA", "FEVISEAL FOAM", "LG DOOR LOCK WIRING(106)", "BRAKE WIRE 6800", "ONIDA GB(GEARLESS)", "BPL SM", "6201 LF", "COVER LG 11KG", "IFB CARBON-BRUSH SET", "TUB SUPPORT ASSY-11KG", "521 BELT", "LG DD SENSOR", "SPIDER IFB ULTRA (2 HOLE)", "ACE SLIDER SET", "INNER LID ACE XL", "IFB MAIN MOTOR", "MECH LG  INVERTER (O)", "GHANTI Cutter", "HAIER SEMI D,ASSY(O)", "LG HINGE PVC", "PIPE", "SAM SEMI PULSATOR 9KG", "LG SEMI SUSP(10KG)", "HAIER SUSP 19''", "GOD FULLY D,ASSY (O)", "TCL PULSATOR 15''", "PANASONIC PULSATOR 14KG", "WM30 BELT", "SPIN CAP GOD", "ONIDA SM", "6075 WT", "BACK COVER 123", "SAM DA(VEM)", "LG SWITCH BODY", "EKL PS SMALL", "GHANTI PCB(MICRO-DIGITAL)", "SPIN LID LG(O)", "PCB SAM(FL)", "ACE SUSP 9KG(O)", "ELENA DOOR HING", "VOLTAS M,PULLY", "6201 OUTLATE", "IFB COMMON CARD (7PIN)", "HAIER FLT BELT", "SPIDER AMAZON", "MECH BOSCH (10KG)", "400T COCK LID", "COVER FLT 11KG", "OTB SAM 7400(O)", "LG STICKER(646)", "IFB MAIN MOTOR 130W", "MAGNATRONE 218 TYPE(O)", "LG WM (O)", "LG 12VDC DA BLK ORG", "HAIER 3WAY FV(O)", "IFB EMI FILTER", "SIEMENS PS FL", "LG TUB FL (OUTER)", "DOOR SWITCH LLOYD", "SS TROLLY SEMI(BOX)", "COVER LG FLT 8KG PLAN", "METAL  TROLLY(H)", "MECH GOD (R)", "DETERGENT BOX", "BPL ST", "MS SEMI TROLLY", "MHJ IBC", "IFB 2WAY FV(BLK)", "MHJ PULSATOR", "400T WT(VEM)", "MECH LG 9KG (R)", "W/P PCB", "6201 GB(XD)", "MECH LG 9KG(DR)", "12.5+5 CAPACITOR", "SPIN LID LG(O)1603", "SPIN LID LG(O)1614", "1M OUTLATE", "IFB DOOR FRAME BIG", "VOLTAS SEMI SUSP", "SPIN LID GOD", "W/P ADAPTOR(WHITE)", "650 BELT(O) GOD", "MICROMAX PULSATOR", "HAIER FULLY PULSATOR(O)", "WYBER PULSATOR", "VID ST(10M)", "GHANTI PCB(NATRAJ)", "MECH SAM(DVM)", "BALANCER RING", "ONIDA PULSATOR CRYSTAL", "SPIDER HAIER 7KG(2 HOLE)", "IFB DOOR FRAME CHROME BIG", "SAM FLT SUSP (INVERTER)", "INLET SEMI LG(3MTR)", "VID SEMI SUSP 400T", "OVEN DOOR LOCK(W/P)", "W/P CAPACITOR", "BODY GOD", "IFB NEXT GEN GASKET", "811 B TO D PIPE", "SPIN LID 6201", "ONIDA I,PULLY GEARLESS", "COVER LG SEMI 1051", "1173 BELT", "DOOR SWITCH W/P", "BRAKE PLATE 6800", "SAM WM(OM)", "BOSCH TUB HOSE", "6064 ST", "6000 SUSP", "A655 BELT", "W/P DRIVE BLOCK 11KG", "COVER IFB TL 6.5KG", "SPIDER", "1120 BELT", "STICKER", "LG WM 120W", "W/P FILTER FRAME 9KG", "PANASONIC PULSATOR(ROUND SNAP)", "GHANTI CHAMBER FRAME", "6207 SKF", "COVER LG FULLY 7KG", "SPIDER INTEX", "ADJ STAND", "513 BELT", "IFB MICRO SWITCH", "COVER FLT 12KG", "1275 BELT", "KENSTAR PULSATOR", "LG FLT FV(O)", "700T OUTLATE", "1661 PULSATOR", "OTB ONIDA H/S", "PANASONIC LF", "6800 COCK FRAME", "A692 BELT", "IFB ON/OFF SWITCH 2PIN", "LG BEARING SET SMALL", "6000 ELBOW", "PCB VID 5800", "LLOYD DRAIN SWITCH", "W/P PS MINI VARI", "M2 PCB(O)", "A690 BELT", "601 LF", "LG DD DOOR LOCK(NEW)", "W/P ADAPTOR SMALL(O)", "STICKER W/P(653H)", "PIPE(METER)", "BPL PS(ABS45)", "25MFD CAPACITOR(GHANTI)", "SAM DOOR LOCK BIG", "HAIER PULSATOR(O)4352", "SNAP 400T", "RO FILTER (CAMFLOW)", "SAM SINGLE WT", "SAFETY SWITCH INTEX", "W/P DOOR SWITCH", "GOD FLT 3M OUTLATE", "IFB DRIER DOOR", "LG FLT PS SHOCKET", "OTB", "PANASONIC GASKET", "T SPANNER 5MM", "XD31 GB", "648 BELT", "HAIER FLT OUTLATE(O)", "OTB UNIVERSAL (W/P)", "KELVINATOR DRAIN SWITCH", "LG SEMI D,ASSY (O) 711", "AMSTERD PULSATOR NEW", "COVER SAM FULLY 9KG", "PANASONIC DOOR SNAP", "LG WIREING(5007)", "W/P SM(COPPER)", "OTB W/P 801(VATICA)", "SAM PS(O)", "SAM DOOR SWITCH NEW", "SWIFT PCB(CHINA)", "SAM SEMI SUSP NEW", "SAM PULSATOR(ROLLER TYPE)", "SUSP HOLDER LG", "FA55 PCB", "STICKER W/P(M2-PCB)", "SUSP HOLDER PANASONIC", "HAIER M,PULLY", "LLOYD PCB (R)", "HALL SEMSOR LG DD", "GOD DA NEO(O)", "INNER LID", "SPIN TUB", "WASH LID LG(O)", "SAM ROLLER PULSATOR (ROUND SNAP)(GOD)", "1112 PS TL", "SAM MAGIC FILTER(O)", "LLOYD GASKET", "LG SEMI D,ASSY (O) 710", "A/C COVER(INDOOR) 52''", "LG MAIN MOTOR(R)", "MECH 811(R)", "SPIN CAP LG 12.5\"", "COVER W/P 360 8KG", "400T WM", "LCD STAND-MOVABLE", "W/P ACE PULSATOR", "UNI. D,BELLOW", "LG WASHER", "SAM 9KG PULSATOR", "OVEN FAN", "LCD STAND-201", "ROZA GB(GEARLESS)", "LG STAND(O)", "PCB UNIVERSAL(FL)", "A675 BELT", "PCB W/P UL72A", "COVER LG SEMI 8/9KG", "W/P BALANCER RING", "LYGINIC LIQUID DESCALER(100ml)", "SAM MEDIUM OIL SEAL", "SPIN LID", "CHANDNI WT(O)", "MECH SAM (DD)", "2900 OIL SEAL", "HAIER DEFROST TIMER", "UNI. SM (OM)", "O700 BELT", "MAGIC FILTER", "ONIDA COCK LID", "HAIER SUSP 22.5'' (IMP)", "SAFETY SWITCH BPL", "SPIN LID 1007", "0001 PULSATOR", "CHANDNI DRAIN PIN", "SAM DOUBLE FEED VALVE", "SAM FULLY MOTOR", "CASTOR W/P", "400T ST(VEM)", "SPIN LID PANASONIC", "GOD DBL 40M WT", "BPL D,BELLOW", "SIEMENS DOOR LOCK SMALL", "SPIN MOTOR(R)", "GODREJ LUSTER", "MOTOR(R)", "M NUT PANASONIC", "BELT W/P", "W/P ACE DOOR SWITCH", "LG FLT DOOR SWITCH", "OVEN PCB LG", "ROYAL PULSATOR", "EKL FEBRIGUARD PULSATOR", "LG DD SENSOR 2002", "OVEN DOOR HOOK(SAM)", "ONIDA PCB(R)", "GOD SM GDS820", "SAM USER BOARD", "ELENA DX DOOR HING", "BPL PULSATOR", "NICE(BLUE)", "DOOR LOCK", "SAM ROLLER PULSATOR(SEMI)(O)", "SIEMENS DOOR HANDLE", "A688 BELT", "W/P SM (OM)", "W/P SM(NEW MODEL) (OM)", "RECONNECT PULSATOR BIG", "SPIN LID GOD 800PD", "PCB HAIER (138C)", "SPIDER VESTAR", "HAIER SUSP 21'' (IMP)", "MENU PULSATOR", "MAIN CORD(GHANTI)", "LG DOOR LOCK", "HAIER OILSEAL BIG(O)", "BOSCH DOOR HING BIG", "GASKET RING", "PANASONIC SUSP", "OTB W/P(O)", "SAM FV NEW", "BPL SMALL MECH", "MECH 1311(O)", "F80 PCB", "BPL WT(BLACK)", "GOD GDS820 PULSATOR", "PCB EKL", "56T WT", "KORIO GB", "SPARKEL DRAIN SLIDER SET", "L2 HUB+LOCK", "UNI. PCB", "IFB ULTRA PUMP", "400T SM(R)", "GOD MAGIC FILTER", "GOD SEMI D,ASSY NEO", "SPIN LID LG(O)1601", "SPIN LID LG(O)1604", "1190 BELT", "IVORY NON-HEATER PCB", "PCB W/P 651R/621R", "OVEN PCB ONIDA", "LLOYD WM", "LG SLIDER SET", "OVEN SENSOR", "6201 I,PULLY", "BPL SEMI LF(ABS45)", "SAM POWER BOARD", "PCB W/P BATMAN", "VID PULSATOR", "ELENA GASKET", "MAGNATRONE 710", "665 BELT", "PANASONIC FLT PS", "W/P DUMP VALVE 11KG", "SPIDER LG 2002", "COVER SAM SEMI", "SUSP HOLDER", "GOD U SONIC PULSATOR", "BOSCH PCB(R)", "UNI. SPIN TUB", "Y HOSE HAIER(O)", "HAIER FEED HOSE FLT", "SAM FULLY PULSATOR (9KG) (GOD)", "SPIDER PANASONIC", "SAFETY SWITCH PANASONIC", "MICRO CLEANER", "COVER IFB TL 9KG", "LG TUB FL (OUTER) FRONT", "IFB PUMP COIL", "HAIER PULSATOR (BIG)", "DOOR SWITCH HAIER", "VOLTAS DRAIN SWITCH", "1238 BELT", "UNI. FEED HOSE (FLT)", "AIR TURBO SPIN/WASH LID SET", "ONIDA WM(R)", "6800 WT(O)", "76A KNOB", "10\" LCD STAND", "W/P OF HOSE", "VID SEMI SUSP 6800", "SALT", "RINSE AID", "LG CLUTCH SPRING", "WM11 BELT", "KNOB 6800", "A610 BELT", "SAM BIG D,BELLOW", "CAPACITOR W/P FULLY(O)", "GOD GEARLESS PULLY", "W/P M PULLY FULLY", "LG FLT 2MTR OUTLATE(O)", "OTB GOD GDS800", "ADAPTOR(THREADED) ORANGE", "ONIDA 15M 4W WT", "VID FLAT SPRING", "PCB ONIDA 492", "KNOB LLOYD", "FHHB", "PANASONIC NUT", "SPIN LID 400T", "SPIN CAP LG 8\"", "ELENA DOOR LOCK", "COVER W/P WWM 8KG", "PANASONIC WT 35M 9W", "6800 ROCKET SET", "IFB DOOR HANDLE ULTRA", "60HBT OTB BIG HOLE", "PIPE CLAMP", "ONIDA H/S PULSATOR", "SCREW DRIVER(T)", "ONIDA MEMRAN", "A630 BELT", "LG M,PULLY(WASH MOTOR)", "COVER PANASONIC", "LG ARROW (L)", "LYOD SEMI PULSATOR", "PCB W/P ELITE EL7", "LG 9KG SPIN MOTOR(O)", "FABRIQ CARE LIQUID", "LCD STAND-L21", "VOLTAS LF", "P.CAP GOD {6201-(O)}", "PCB BOSCH(TL)", "558 BELT", "W/P DRAIN SET SEMI", "MICRO PCB WIRE", "IFB INNER TUB", "6000 ACT LEVER", "GHANTI SWING MOTOR RUBBER(PACKING)", "GHANTI JALI(BIG)", "HAIER FAN MOTOR DC(LONG SHAFT)- 944", "KNOB GOD 7202", "METAL TROLLY 22*22(H)", "VISER", "MECH LG (LOGO)", "IFB DOOR HOOK", "GHANTI POWER BOARD", "TIMER", "W/P LID SWITCH", "555 BELT", "LG OIL SEAL 7KG(O)", "STUBY 100", "COVER SAM FLT 10KG", "GOD SM 6203 45W", "PCB HAIER (138B)", "HAIER POWER BOARD", "FEED HOSE 9\"", "IFB DRIER PLASTIC PULLY", "T SPANNER 6MM", "PULSATOR CAP COMPLETE LG SMALL", "GHANTI THESI", "LG WIREING(6703)", "LG 12V FV (3 COIL) RED+2 BLUE (O)", "VOLTAS FLT 2WAY FV", "11141 PS", "SAM INVERTER COIL", "BODY  SAM (W/O BASE)", "NYLON DORI", "CAM SPLUCH", "GHANTI ATTACHMENT", "LG FILTER FRAME (MAGIC FILTER) COMPLATE SET", "MECH SAM INVERTER 9KG", "VOLTAS D,ASSY", "MIDEA DA", "W/P GB ORANGE", "LG PUMP DBL DC", "SS TROLLEY KNOB", "234 BELT", "COVER SAM FULLY 11KG", "BODY   LG [10KG(O)]", "LG OLD GB (O)", "488 BELT", "SIEMENS OIL SEAL", "Sanyo I.Pulley", "ONIDA SM(NEW MODEL)", "SAM MAIN MOTOR(R)", "D,LEVER ROZA", "ROZA WT SINGLE 35M", "SA68 IBC", "SPIN LID SAM 7100", "VID FULLY SUSP", "L5 PCB", "HAIER BELT", "SAM GB 14KG", "CASTER SET (FLEXI)", "BRAKE WIRE W/P", "HAIER 5FLOWER PULSATOR", "LG LIQUID(D-SOIL)110ML", "SPIN LID LG(O)1802", "W/P SPIN TUB", "MECH LLOYD (S/G)", "KNOB IFB(CHROME)", "KNOB IFB", "LG DD PULSATOR", "PCB HAIER (DISPLAY)", "SAM DIXON PULSATOR(NEW)", "GHANTI RING(RUBBER-BLACK) NATRAJ", "SAM SEMI LID SWITCH", "HAIER FLT OUTLATE", "MECH LG  INVERTER (R)", "SPIDER HAIER(2 HOLE)", "1000W TRF", "W/P WIRING(6487)", "TOSHIBA PUMP", "MECH MIDEA(O)", "LG SM 9KG (WATERPROOF)", "MECH LG  INVERTER 9KG(DR)", "LG NEW GB(SD)", "OVEN CLEANER", "VID SM(R)", "E50 PULSATOR", "DOOR SWITCH SAM FLT", "OTB GOD 5.9KG", "LG WASH/SPIN SLIDER", "GOD DA+COCK ASSEMBLY", "LG ON/OFF SWITCH", "2002 SW BODY", "EKL D.ASSY", "LG FLT OILSEAL BIG", "WASH LID W/P ACE", "BPL DA", "BS65 PULSATOR", "W/P CASTOR SET", "GDS800 PULSATOR", "MECH LG I/W", "ACE OF FILTER", "SWIFT PULSATOR", "W/P ACT LEVER", "LYOD 13 PULSATOR", "PCB VID 911VM", "OTB LG(9KG[O])", "SAM FLT FV", "590 BELT", "GEM PULSATOR(8KG)", "BS40 D,BELLOW", "LCD STAND-MOVABLE(BIG) M191", "LG FLT MOTOR", "SAM PCB FL(R)", "HAIER 35M(O)", "OVEN TT RING BIG", "PCB W/P WR62A", "BRAKE PLATE LLOYD", "COVER IFB FL 9KG", "15+5 CAPACITOR", "PANASONIC PUMP", "NA DA(BLACK)", "W/P OF FILTER FRAME(COMPLETE)", "LG HYDROLIC DOOR", "OVEN TRIANGLE(BIG)", "LG INVERTER BELT", "GHANTI FILTER FRAME (TOPA)(NATRAJ)", "BODY  LG(O) LIGHT GREY", "HAIER SENSOR(1808A)", "HAIER SENSOR", "GOD BUZZER", "HAIER FLT 3WAY FV", "LG SMALL ROLLER PULSATOR(GOD)", "BACK COVER IFB", "GRACIA 5FLOWER PULSATOR", "LG STICKER(617)", "BODY HAIER(O)", "W/P WM 90W(O)", "LYYOD 3 PIN PS", "VOLTAS SEMI D.ASSY", "LG SM 10KG(O)", "HAIER DOOR HING SMALL", "COVER FLT BIG", "OTB W/P  UNIVERSAL  BIG", "MIDEA PUMP", "MIDEA WM", "ONIDA SM(R)", "W/P SEMI SUSP 801", "PCB ONIDA 566", "6800 NOZZEL SET", "DOOR SWITCH IFB NEW", "INNER LID GOD", "OVEN TRF", "GOD SEMI LF", "MECH DG MARINE(R)", "BS65 LF", "VID ZARA MAGIC LF", "ONIDA PULSATOR 13''", "400T GB(XD)", "HAIER DBL FV", "LLOYD MAIN MOTOR", "123 M PULLY", "FILTER FRAME W/P", "METAL TROLLY 24*24(H)", "SPIN LID HAIER/INTEX", "MECH BPL SMALL(R)", "PCB W/P 601S", "ROZA I,PULLY", "SPIN LID W/P 801", "BLUE SHOOZE", "PCB W/P WS72A", "COVER GOD", "LYOD MAGIC FILTER (SMALL)", "VID DBL FV", "HAIER SEMI SUSPENSION", "9+4.5 CAPACITOR", "NATIONAL FILTER FRAME", "LG KNOB(O) 2003", "IFB BEARING SET SMALL", "BODY PANASONIC", "HAIER FILTER FRAME", "COVER LG SEMI", "W/P SLIDER SET", "COVER W/P BLOOM WASH 11KG", "MHJ IMP. PULLY", "DRAIN RING HAIER", "1216 BELT", "EKL PS (FL)", "MAGNATRONE SAM GLANZ", "SPIDER HAIER 8KG", "IFB TUB (FL) 7KG", "IFB OIL SEAL 8KG", "LG OIL SEAL BIG(IMP)", "HAIER SUSP 21.5''", "PCB W/P UC7AA", "PCB W/P 651RA", "HAIER PS(9404)", "1240 BELT", "BPL DOOR SWITCH", "BRAKE WHEEL HAIER 9KG", "SPIN LID VOLTAS 14KG", "BATHROOM CLEANER", "W/P HYDROLIC DOOR CLAMP", "DRAIN ASSY", "MIDEA GASKET", "8MFD CAPACITOR", "VOLTAS HUB 6ARM", "GHANTI PCB[(WAVE)TALKY]", "W/P MAGIC FILTER 10KG", "M,PULLY", "FIX STAND 19*24", "W/P DA(VEM)", "W/P SEMI SUSP CHANDNI", "SPIN LID SAM 1700", "400T M PULLY", "6036 WT", "LG DBL 45M WT", "WASH MOTOR(R)", "GOD GDS820 WT", "VID NEN0 PULSATOR", "GOD COCK LID", "SPIN LID VID ZARA", "ACE FILTER FRAME", "GOD 35M 8W WT", "L1 PCB", "MECH EKL", "GHANTI SPARES", "W/P SEMI OLD JUMPER", "MECH SAM 9KG(R)", "VID SEMI D,ASSY", "BOSCH PCB(R) TL", "LG LIQUID(D-SOIL)180ML", "1181 BELT", "MECH HAIER(R)", "PCB W/P 622P 65A", "TUB", "IFB DOOR FRAME ULTRA", "INNER LID INTEX", "IFB CAPACITOR (TL)", "PANEL", "BOSCH FOLDED HOSE", "PCB W/P UL67", "LLOYD I,PULLY BIG", "ONIDA BAL. RING", "LLOYD SM", "CAM RING SPLUCH", "EKL LF", "STICKER HAIER", "DOOR SWITCH HAIER SEMI", "SPIDER IFB ULTRA 9KG", "INTEX ROLLER PULSATOR", "COVER BOSCH", "HAIER PUMP WITH D,ASSY", "VID SEMI LID SWITCH", "SPIDER IFB BLACK", "LG STICKER(613)", "HAIER DRAIN SWITCH", "VID PS", "LG STICKER(810)", "6000 drain lever", "AUTO INLET 1.5MTR(GOD)_x0002_", "HAIER FOLDED HOSE", "SPIDER HAIER 10KG", "INNER LID LG SMALLEST", "O571 BELT", "PCB MARQ", "PCB W/P WP6AA", "ONIDA 15M WT(NEW)", "WIND JET DRY SPIN LID 1022 (ORG TYPE)", "GOD FULLY LID", "LLOYD DOOR HING", "IFB DOOR FRAME GREY", "PCB SAM (INVERTER) 18SW", "COVER BIG MIX", "HAIER TUB HOSE", "HAIER SUSP 24''", "SAM MAIN MOTOR 9KG", "SAM FLT 2WAY FV", "PULLEY", "PCB LG (DISPLAY) 922", "PCB HAIER (731G)", "PUMP FILTER", "7201 PULSATOR", "ALA. ALPHA PCB", "SPIDER SAM 9KG", "COVER LG LOGO", "6800 WM (R)", "SAM 40M WT(O)", "2 IN 1 FLT ADAPTOR", "BPL FULLY PULSATOR", "400T FHHB", "SAM FV(OM)", "DOOR SWITCH SAM OLD", "1036 SW BODY", "A/S SUSP", "W/P 801 OTB (O)", "GOD WM(JADI SHAFT)", "WIND JET DRY SPIN LID BIG", "WASH LID 6800DX", "400T SM(O)", "ROYAL TSP SET", "W/P DOOR SPRING", "LG WM 9KG", "6074 WT", "DRAIN SPRING SAM", "KNOB 6800DX", "PANASONIC DOOR LOCK", "696 BELT", "WM640 BELT", "EKL FV", "PCB FA55", "FEED HOSE MULTI DX", "6800 MAXI HOSE SPIN SHOWER", "811 VALVE MAGNAT", "LG 12V SINGLE FV", "W/P WHITEMAGIC SUSP", "W/P BOTTOM FILTER", "6384 BELT", "FRONT LOAD CLAMP", "200T ACT LIVER", "BRAKE WIRE HAIER", "GOD SM(R)", "MECH PULLY", "LLOYD PCB", "SERINA FEED HOSE(BIG)", "FEED HOSE 4\"", "PIPE TRANSPARENT", "ROZA GEARLESS IMP PULLY", "COVER HAIER", "IFB TIMER", "IFB DOOR HANDLE BIG[WHITE-(O)]", "GOD BALANCER RING", "VID D,ASSY(PACE)", "IFB 2MTR OUTLATE(O)", "LYOD MAGIC FILTER GREY", "CHANDNI OF HOSE B", "INNER LID ONIDA", "A34 BELT", "SPIN LID LG(O)1606", "NUT+BOLT (COOLER TROLLY)", "COVER IFB FL 7.5KG", "6304 HCH", "PCB HAIER (5SW)", "HAIER TUB FL", "VOLTAS DOOR HANDLE (FLT) BEKO", "HAIER PUMP WITH FILTER", "GOD 35M 9W WT", "SPIN MOTOR(WATERPROOF)", "GHANTI RING+THELI SET", "SENSOR(2186A)", "MOTOR DC", "800PD PULSATOR (ROUND SNAP)", "800PD PULSATOR (SQARE SNAP)", "6112 WT(O)", "HAIER SENSOR(1008A)", "ACE SPIN SLIDER SET", "HAIER SENSOR (1946)", "SENSOR", "LG STICKER(637)", "LG STICKER(809)", "IFB MAIN MOTOR 150W", "HAIER GB(O) 14KG", "D-SOIL LG BIG", "SAM B TO D PIPE 11KG", "PCB FRIDGE HAIER", "DIVA FOLDED HOSE", "6000 WM (OM)", "GHANTI RUBBER(WAVE)", "LG STICKER(401)", "LG STICKER(635)", "BASE LG", "SPIDER W/P", "GHANTI PCB", "O560 BELT", "IFB DRIER FILTER (TYPE 1)", "IFB DRIER FILTER (TYPE 2)", "COVER BOSCH FL 8KG", "TOOL BAG() NEW", "GOD FLT 2M OUTLATE", "1001  PULSATOR(GOD)", "BOSCH PIPE", "HAIER SUSP 20.5''", "HAIER ON/OFF SWITCH", "HAIER INLET(019)", "HAIER SENSOR(1649A)", "INNER LID W/P 11KG", "PRESSURE SWITCH (BULLET)", "W/P HYDROLIC DOOR CLAMP (WHITE)", "VID PULSATOR 11KG", "GHANTI BUSH", "LG STICKER(642)", "LG FLT 3WAY FV(WATERPROOF)", "SAM PUMP DC", "LG TUB FL (OUTER) BACK", "LG NUT 9KG", "GHANTI WHEEL BIG", "1112 PS FLT", "EKL DOOR LOCK", "LG WIREING(6011)", "SPIDER BOSCH IQ100", "VOLTAS DOOR LOCK", "AUTO INLET 3MTR(GOD)", "LG FEED HOSE(SEMI) LONG", "PCB PANASONIC 7SW", "LG DD D,ASSY", "VOLTAS 3WAY FV", "PCB MIDEA 8SW", "MECH BPL", "COVER FLT 15KG", "LG DOOR LOCK (O)5204", "SIEMENS FV (DRIER)", "COVER FLT 7.5KG PLAN", "IFB DOOR FRAME  RING", "ELENA DX GASKET", "ROZA GB (GEAR ON)", "11.5+5 CAPACITOR", "789 BELT", "HAIER SPIN TUB", "SAFETY SWITCH 200T", "W/P SM(R)", "200T SM (R)", "MECH IFB HALF(R)", "SAM 15M 7W WT DBL", "CHANDNI LF", "PCB 811", "6049 WT", "LILIPUT GB", "360 8KG PCB", "BRAKE PLATE ONIDA", "D G NEMO PULSATOR", "TVS MAIN MOTOR(R)", "CROWN PULSATOR", "DRAIN RING ONIDA", "BPL PS", "ACE SPIN TUB", "400W IBC", "BOSCH DOOR HANDLE", "MECH 1311(R)", "575 BELT", "PCB W/P 651 ROYAL", "IFB FL PIPE(IN METER)", "IFB/LLOYD DA", "SHARP D,ASSY", "FIX STAND 20*24", "MECH SAM(I/W)", "PCB W/P(R)", "VID 3FLOWER PULSATOR", "W/P OUTER TUB", "GHANTI PCB(MICRO-VACUME)", "MECH DG OCEAN(R)", "OTB DAEWOO", "BOSCH PCB(R) FLT", "HUB-DRIVEBLOCK-BASKET,G62", "PCB W/P CL65A", "SUSPENSION", "SEMI LG 9KG JUMPER", "PCB LG 6SW", "SAM SAFETY SWITCH(NEW)", "HAIER MEMRAN", "LG SEMI PCB(WITH DISPLAY)", "TVS MAIN MOTOR", "L4 PCB", "LG OUTER TUB", "DEWOO FV", "MECH LLOYD(R)", "BPL FLT HINGE", "SPIN LID NATIONAL", "SUSP HOLDER IFB", "LG FULLY DOOR(HYDROLIC) WITH FRAME", "SAM FLT MOTOR", "IFB OIL SEAL(2400)", "LG PS  (O) 1001B", "HAIER POWER BOARD(IVERTER)", "COVER SAM FULLY 13KG", "HAIER GB(O) 11KG", "LG SUSP SPRING (FLT)", "HAIER 4WAY FV", "SPIN MOTOR (OM)", "125W WASH MOTOR", "HAIER FLT SUSP", "VOLTAS PCB(R)", "IFB BEARING SET 8KG", "HAIER INLET SMALL(386)", "C HOSE HAIER", "HAIER SENSOR(531C)", "PANASONIC SM 14KG", "570 BELT", "VOLTAS PULSATOR(BEKO) C", "LG WIREING(6001)", "W/P 123 HEATER", "COVER W/P (PLAN) BIG", "SAM PULSATOR 9200", "LG D,BELLOW", "SIEMENS 2WAY FV (WITH SENSOR)", "BOSCH SUSP TL 58CM", "MECH VOLTAS", "THOMSON PULSATOR", "LOW PCB", "MECH LG SINGLE GEAR(O)", "LG 8SW PCB", "VID 35M DBL WT(O)", "SPIN LID ROZA", "BPL DA (VEM)", "2350 BELT", "LG DBL FLT FV", "400T SPIN SHAFT", "KNOB EKL", "METAL TROLLY 9031", "EKL SUSP", "1113 SW BODY", "SPIN LID LLOYD", "PCB ONIDA OLD", "SPIN LID 801", "W/P ELBOW", "BOSCH/SIEMENS DESCALE(BOX)", "COVER OVEN BIG", "COVER OVEN SMALL", "HAIER CAPACITOR", "VID NIWA WT", "SPIN LID W/P SPARKLE", "COVER LG SEMI 12111", "W/P TIMER(O)", "W/P SPLUTCH SPRING", "COVER FLT 5KG", "SPIDER PULLY", "LG GASKET 9KG", "LCD STAND-101", "FILTER FRAME LG SEMI", "W/P FULLY LID", "COVER IFB TL 8.5KG", "MECH PLATE", "SAM PULSATOR(STEEL)", "LYOD DA BLK", "COVER HAIER FL", "HAIER DA(NEW)", "5200 PCB(60MFD)", "WASH LID SAM", "470 BELT", "NA DA(WHITE)", "ONIDA MAIN MOTOR", "SPIN LID KELVINATOR", "SPIN LID W/P(8KG)", "PCB FRIDGE", "EKL MAGIC FILTER", "PCB OVEN UNIVERSAL", "KELVINATOR M,PULLY", "NA DA", "LG USER BOARD", "CELLOTAP", "EKL M,PULLY", "OTB GOD 6502", "HAIER SWITCH BODY", "IFB OIL SEAL(2900)", "AKAI PULSATOR", "HAIER 35M 7W WT", "PCB HAIER (220V)", "PCB HAIER (7SW)", "HAIER SEMI SUSP(O)", "HAIER PULSATOR(O)3131", "HAIER PULSATOR(DIXON)", "GOD SEMI LID SWITCH", "W/P TUB", "MECH LG (R) S/G", "PUMP", "1.1 MFD CAPACITOR", "FEED HOSE 10\"", "BASE SAM", "COVER FLT 10KG PLAN", "SPIDER GLANZ", "LIQUID 5Ltr (RATNA)", "W/P LID HING", "SPIN LID LG", "SPIDER SAM 15KG", "LG FLT DOOR", "525E BELT", "HAIER SENSOR(1747A)", "W/P HYDROLIC DOOR CLAMP (BLK)", "O600 BELT", "GOD 35M DBL WT", "NA MEMRAN", "SAM PULSATOR (INVERTER)", "TCL PULSATOR BIG", "LYOD SEMI D ASSEMBLY", "LG S PIPE", "SPIDER MOTOROLA", "TOSHIBA PULSATOR BIG", "LG SEMI MAGIC FILTER BIG", "HAIER DOOR HANDLE", "LG DBL 35M 6W WT", "SAM MAGIC FILTER RUBBER", "PCB LG (DISPLAY) 944", "SIEMENS 3WAY FV", "COVER LG(O) FLT", "TOSHIBA FV", "MEMRAN (LED)", "120W WM", "PRESSURE SWITCH XQB 45 - 95", "IFB DOOR FRAME RING", "SAM FLT 1.5MTR OUTLATE", "MITSUBISHI PULSATOR", "W/P WIRING", "7201 D.BELLOW", "LG DOOR LOCK WIRING(106)-5007", "TTIMS4 WT", "SAM WM(R)", "CROMA FULLY SUSP BLUE", "SAM WIREING", "IFB SUSP  TL 8KG", "UNI. OTB(OM)", "VID PS FA55", "INNER LID HAIER", "TVS SM(COPPER)", "6800 OF HOSE A", "GOD SEMI 5.9KG PULSATOR", "400T SM(COPPER)", "METAL TROLLY 25*25", "ONIDA SMALL PS", "1551 PULSATOR", "KENSTAR B TO D PIPE", "IFB DBL PUMP BIG", "6021 WT", "VID ROSA PULSATOR", "IFB SUSP  TL 9KG", "MAGNATRONE(INVERTER)", "GOD MAIN MOTOR(R)", "LG HANDEL BIG", "GOD 7002 GB(O)", "INNER LID LLOYD", "123 TSP SET", "L2 PCB", "GOD SW BODY", "PANASONIC OF HOSE", "LLOYD DRUM", "COVER LG SEMI 15125", "SPIN LID ZARA ROYAL", "ONIDA PULSATOR H/S", "ARROW HAIER", "IFB FLT PS(4PIN)", "SPIN LID LG 8KG", "VIRAT SWITCH BODY", "GOD 6502 SUSP", "IFB LIQUID(CONDITIONER)", "700T WT", "LG 12V FV NEW", "FP60 DLX PCB", "COVER LG FLT 8KG", "SPIN MOTOR(R) Alu.", "INTEX GB", "O820E BELT", "BASE 123", "NIWA PCB", "LCD STAND-280", "BRAKE WHEEL W/P 601", "MECH IFB(R)", "VID SWITCH BODY", "BOSCH/SIEMENS FLT PS", "BS65 WT", "LLOYD ST 10M", "SAM OUTER TUB", "VID SEMI PCB", "FLT PCB(R)", "1200 BELT", "PCB W/P UL6A", "Fivbro LIQUID", "200T WM(R)", "SWIFT BALANCER RING", "PCB W/P UL65A", "COVER LG SEMI 7.5KG", "MECH DG OCEAN", "VIRAT FEED HOSE", "BS40 LF", "6000 WM(R)", "SAM SPIN LID + WASH LID SET", "PCB SAM SMALL", "GOD DOOR SPRING", "SAM FILTER FRAME", "PCB W/P 652SD", "IFB SUSP  TL (GOD)", "6029 WT", "PCB W/P DC80A", "PCB W/P UL62H", "W/P 9KG SM", "SAM FLT DOOR LOCK NEW", "OVEN PCB SAM", "SAM FLT HINGE", "GOD PCB(R) FL", "811 ON/OFF SWITCH", "HAIER/VOLTAS PS", "VOLTAS DOOR SPRING(FULLY)", "W/P BEARING(O)", "OVEN DOOR HOOK(LG)", "IFB MAIN MOTOR(R)", "TCL M,PULLY", "IFB NEXT GEN TUB HOSE", "SPIN LID ONIDA", "SAM PUMP(WITH THREAD)", "IFB TROLLY CORNER", "MECH GOD(I/W)", "SPIN LID LG(O)1602", "TOSHIBA 2WAY FV", "LG 10KG DRAIN BELLOW", "W/P SEMI D,ASSY(O) HEXA", "PCB HAIER (5 PIN)", "DG NEMO PULSATOR BIG", "TEXLA PULSATOR", "SPIN LID MAX DRY", "W/P SPIN TUB(9KG)", "SPIN LID AMAZON", "HAIER PULSATOR(O)7860", "HAIER BIOMETER", "HAIER SENSOR(184A)", "ONIDA B TO D PIPE", "WASH LID HAIER", "LG STICKER(639)", "HAIER FLT CAPACITOR", "MECH (R)", "SPIDER IFB ULTRA 7KG(IMP)", "W/P NEW DOOR LOCK", "SS1 (POTLI) 11KG", "HAIER SUSP(O) 10KG  _x0002_", "COVER VOLTAS", "BODY   W/P 8KG", "MECH LG 9KG(DVM)", "LG STICKER(647)", "W/P WM 11KG(O)", "TUB SUPPORT ASSY-L3", "GOD POER BOARD", "GHANTI PCB DISPLAY(NATRAJ)", "LG MAIN MOTOR DD", "W/P BALANCER RING SEMI", "IFB GASKET 390", "SIEMENS PUMP UNIVARSAL_x0002_", "LG OUTER TUB (FL)", "SPIDER SAM 16KG", "W/P 11KG PS", "SPIN LID MARQ", "123 LOCK + BOLT", "HAIER FLT FV(O)", "800PD PULSATOR(O)", "SPIDER IFB SANATOR", "SANSUI PULSATOR", "PCB HAIER (4RA)", "Y HOSE HAIER(O) WITH PRESSURE PIPE", "MECH PANASONIC 8KG", "LG WIREING(8001)", "BOSCH LIQUID DESCALE(BOTTLE)", "5800 TUB HOSE", "PCB W/P 6AA", "W/P DRIVE BLOCK RETAINER", "COVER BOSCH FL 7KG", "LG ELEMENT SENSOR 9KG", "LG 12V FV (FLT-5WAY)", "GHANTI SWING MOTOR HOUSING(NEW)", "UNI. SM(R)", "LG FLT INNER DRUM", "LYOD SUSPENSION W/G", "MECH SAM INVERTER 11KG", "VOLTAS D,ASSY BEKO", "CASTER SET (UNI. TROLLEY)", "GHANTI PCB(MICRO-SET) 2HP", "SS 22*24", "COVER LG SEMI 25145", "9200 PULSATOR", "PCB LG (DISPLAY) 211", "GHANTI BUZZER", "PCB SAM (INVERTER) - DISPLAY", "LG BIGGEST ROLLER PULSATOR(O) 0401", "PCB SAM  DISPLAY WIFI", "LG SPIN TUB(O) 9KG", "PCB TOSHIBA", "LG GASKET 1601", "COVER SAM FULLY 12KG", "PCB SAM (INVERTER) FLT", "IFB FLT FEED HOSE", "COVER SAM FULLY 10KG", "WIRE TAP(BOX)", "GHANTI ATTACHMENT BIG", "123 MOTOR(R)", "811 MAIN MOTOR(R)", "W/P LONG SUSP(O)", "SOLO WT", "AGITATOR ACE", "6000 NOZZEL", "IFB DBL PUMP", "PCB ONIDA HD", "A588 BELT", "400T WM(R)", "MECH TOSHIBA(R)", "DOOR SWITCH SAM NEW", "FRIDGE SPARES", "SAM MECH+MOTOR SET", "GOD 6502 ST(O)", "400T FEEDING PORT", "LLOYD WT", "LG FLT PS(L)", "WWM MOTOR(O)", "WASH LID VIRAT", "200T M PULLY", "A/S TSP SET", "LLOYD PCB CURVED", "MECH DG MARINE(O)", "400T FILTER FRAME", "6800 COMPLETE PULSATOR", "RELAY", "W/P OF HOSE CHANDANI", "DRAIN RING VOLTAS", "LG SM 9KG(R)", "GOD SPIN TUB", "1245 BELT", "VNA 68 I,PULLY", "1309 BELT", "6201 SPIN TUB", "FLT TROLLY 22*22", "6004 ST", "W/P STICKER", "VID 250DX WT", "DISH WASHER LYGINIC", "GOD SM 8502", "W/P MECH PUMP", "AUTO INLET W/P(3M)", "ONIDA COCK FRAME(LILIPUT)", "PCB INTEX", "W/P 11KG OIL SEAL", "SHARP PCB(R)", "COVER PANASONIC FLT", "6000 WT HOLDER", "700T GB", "IFB OUTER DRUM", "WASH LID 400T", "W/P SEMI BALANCER RING", "A20 BELT", "PCB W/P V54", "PCB SAM(FRIDGE)", "GOD OF FILTER", "HAIER 4SW PCB", "W/P RAT MASE", "801 SPIN TUB", "LLOYD SWITCH BODY", "ACE BAL. RING", "BRAKE WIRE ONIDA", "811 M,PULLY", "GOD UNI. SUSP", "D,LEVER KELVINATOR", "COVER LG FULLY 18KG", "1322 BELT", "PCB W/P UL62", "DRAIN SPRING BPL", "OTB GOD 6801", "PANASONIC ST", "PCB W/P 621SW/651SW", "PCB W/P DC62", "W/P SPIN TUB(7KG)", "PCB PANASONIC 8SW", "MECH DG ZARA(R)", "INTEX SUSP 20.5''", "EKL PCB(R)", "ELENA DOOR FRAME", "ROLLER CLAMP+SCREW", "GOD SENSOR", "COVER SAMSUNG SEMI", "IFB ULTRA OIL SEAL SET 12KG", "AC PCB(R)", "STICKER W/P L5", "MECH ONIDA HALF(R)", "WASH LID 6201", "LLOYD IBC", "LG ROLLER PULSATOR(SQARE SNAP)", "SPIN LID LG(O)1609", "HAIER SM 14KG", "SA68 I,PULLY", "PANASONIC TUB", "6080 WT", "6007 WT", "WT 40", "BOSCH TUB", "BALANCER RING VID(FULLY)", "PCB W/P(FLT)", "W/P WT(RED BULL)", "LYOD FULL PULSATOR BIG", "200M WASH MOTOR", "MECH VID(R)", "BPL OIL SEAL", "LG FULLY DOOR(HYDROLIC)", "HAIER C HOSE", "PANASONIC SEMI D,ASSY", "IFB FLT C HOSE", "MECH PANASONIC 14KG", "5.3+2.1 CAPACITOR", "L3 LOCK", "BRAKE WHEEL BS65", "HAIER OF FILTER", "VID MAIN MOTOR", "MIDEA DOOR LOCK", "HAIER SM 9KG (O)", "SPIN LID W/P(9KG)", "IFB GASKET 030", "200T PULSATOR", "BALANCER RING LG", "ONIDA MAIN MOTOR(R)", "SPIN LID VOLTAS 12KG", "BODY   W/P  L2", "S PIPE HAIER", "HAIER WM 120W", "IFB DOOR FRAME WITH GLASS", "BODY  LG(FLT)", "LG PCB(R) INVERTER", "W/P WM(OM)", "HAIER TUB FL (OUTER)", "HAIER FULLY LF(O) SMALL", "IFB TUB (FL) 8KG 070", "W/P WT(9491)", "MIDEA WT 15", "GOD OIL SEAL", "GOD USER BOARD", "HAIER USER BOAD", "HAIER SM 10KG (O)", "PCB KELVINATOR", "760 BELT", "MARQ PS", "IFB DOOR FRAME ELENA", "BODY W/P(11KG)", "P.CAP", "HEATER GOD", "NIWA ST", "IFB GASKET 150", "SPIN LID LG(O)1623", "VOLTAS DOOR LOCK(NEW)", "SAM M,PULLY(BIG)", "SPIDER RECONNECT", "W/P FLT PS(O)", "IFB FULLY SOFETY SWITCH", "SAM DD MOTOR", "MECH TCL(R)", "LLOYD TUB HOSE", "HAIER 2WAY FV(126B)", "HAIER TUB (INNER)", "2360 BELT", "A36 BELT", "IFB GASKET 380", "IFB GASKET 310", "IFB TUB (TL) FULLY", "LLOYD T HINGE", "SLOT SENSOR SAM", "LG 11KG MAGIC FILTER", "SOLAR CLEANER", "IFB TUB (FL) 8KG 051", "COVER W/P STAIN WASH 8KG", "CHARGES", "KELVINATOR D,ASSY", "SAM DIXON PULSATOR BIG", "SS 20*24", "SS 24*24", "LG FILTER  PCB BIG", "SAM S PIPE SMALL", "INTEX PCB(R)", "D,SET ONIDA WASHER", "WASH LID GOD", "cap impeller wp", "MIDEA PS", "GOD FLT 2WAY FV", "LG DD COIL", "5500 PCB", "SPIDER LG 10KG(1201)", "PCB MIDEA 4SW", "L BAND CONNECTOR", "SS TROLLEY PART", "MECH TOSHIBA", "6000 BREAK WHEEL", "L3 PIPE", "Glass Try 11.5 Inch", "TVS SM(FRESH)", "MID. PCB", "FIX STAND 24*24", "FIX STAND 17*24", "FIX STAND 22*24", "ALU. MOTOR(R)", "TVS SM(R)", "IFB 4WAY FV", "FIX STAND", "20\" LCD STAND", "W/P FULLY ADAPTOR SMALL(L)", "VID D.BELLOW(O) 400T", "DETERGENT", "VID FULLY SUSP REGULAR", "ELENA DX DOOR LOCK", "CHANDNI AGITATOR", "GODREJ DRAIN LEVER", "BPL BEARING CASE", "MHJ BEARING CASE", "SAM 7400 OTB", "GODREJ 6201 WASH TIMER", "6800 KNOB", "TCL MECH(R)", "vid 6000 gb org", "VEG. CHOPPER", "W/P 801 SM(FRESH)", "SPIDER SAM 5KG", "SAM FULLY TUB", "SAM FULLY TUB(9KG)", "LG TROME PUMP", "SAM 5.5KG FLT DRUM", "METAL TROLLY 22.5*22.5", "EXTRA POLYTHENE FOR COVER", "SPIN LID EKL", "VID SEMI NEW D,ASSY", "400T ACT LIVER", "ROZA LF(O)", "SAM LID HOLDER", "SAM 7W 15M WT", "SAM 7W 35M WT", "W/P 801 WT", "MIX BELT", "VID D,BELLOW(OM)", "6800 WASH LID", "VOLTAS SM (R)", "LG OLD GB(SD)", "VID NEW TIMER", "SA63WT 35M(O)", "SPIDER SAM 7KG", "SWIFT SUSPENSION", "ONIDA H/S OTB", "SAM 6500 OTB (O)", "ELENA DOOR HANDLE", "IFB SANATOR DOOR HANDLE", "WM694 BELT", "AGITATOR NT", "IFB/EKL B TO D PIPE", "KNOB 76A", "SAM 4PIN WT(O)", "TTIMS4 I,PULLY", "METAL TROLLY MIX", "WASH MOTOR MIX(COPPER)", "LG BACK COVER METAL", "H80 MAIN LID", "FLT BELT", "VID SEMI SUSP ROZA", "VID LF(O)", "W/P WHITE ADAPTOR", "MOTOR+MECH SET SAM", "MECH SAM(R) BIG PULLY", "VID FULLY SUSP(O)", "IFB DBL PUMP NEW", "MECH DD SAM", "BELT FLT MIX", "SPIN LID GOD GDS 820", "360 8KG INNER TUB", "SPIN LID 64RF", "6800 35M WT(O)", "W/P DRAIN KNOB", "BRAKE WHEEL 6000", "VID SEMI SUSP 6000", "WASH LID 6000", "WASH LID 64RF", "360 PCB", "METAL TROLLY 21*21", "SAM 9KG TUB", "HAIER SM OLD", "15\" LCD STAND", "METAL TROLLY 7400", "HANDLE THELA", "24\" HUB(O)", "BPL SM(R)", "GOD GEARLESS GB(O)", "BS65 OTB", "OTB 400T(S4A)", "TVS GADA(R)", "BPL FULLY D,BELLOW", "2900 DOOR LOCK", "IFB ULTRA PUMP BIG", "W/P PLAT MOTOR WITH BEARING", "1311 ON/OFF SWITCH", "1014K PCB", "COVER IFB TL(O)", "JMG LIQUID", "GOD SEMI 6502 LF", "GOD SEMI 7002 LF", "IFB 4MTR OUTLATE", "INNER LID VID", "METAL TROLLY W/P(OLD)", "W/P WHITEMAGIC MOTOR", "INNER LID 6800 DX", "GOD SEMI 5.9KG LF", "6018 WT", "WWM BAL. RING", "WWM LID", "123 LID", "IFB LEG SET", "BS40 HUB", "LLOYD LEG SET", "KNOB 7002", "LLOYD BELT", "LLOYD LF", "6037 WT", "6076 WT", "GOD 6801 WT", "INNER LID MIX", "SPIN LID 7100", "KNOB 801", "6800 NOZZEL PIPE", "MOTOR ALU.", "METAL TROLLY 6000", "FIX STAND 22*22", "WWM M,PULLY", "6043 DA VID", "ADN CAPACITOR", "123 CAPACITOR", "BODY W/P SEMI", "GOD 6502 GB(O)", "CAPACITOR VID", "W/P 6017 ST", "OTB MIX VATICA", "VID BELT", "VOLTAS D,RING", "W/P FULLY MOTOR", "HUB+LOCK(L)", "OTB 36T", "SAM 4W WT", "SPIN LID 7400", "IFB PUMP HOSE", "LG OF HOSE WHITE", "TCL 15M 7W WT", "VID D.ASSY NEW", "KNOB GOD NEW", "VID SEMI SUSP NANO", "INNER LID 400T", "GOD 7501 LF", "MAIN MOTOR(R)", "W/P 6W DBL WT", "SPIN LID 9031(O)", "6017 ST", "6801 WT", "METAL TROLLY SEMI", "FIX STAND 25*25", "L5 USER BOARD", "THELI YELLOW", "THELI WHITE", "THELI(PERFECT)", "W/P 360 PULSATOR", "IFB ULTRA PUMP SINGLE", "FEVIQUICK", "BRAKE WIRE 6\"", "OF HOSE 35CM", "WWM MOTOR(R)", "IFB 35CM BLK PIPE", "LG FLT OUTLAT", "DOOR SWITCH 200T", "KNOB BLACK&WHITE", "6000 ST(O)", "TVS SM(O)", "6800 BELT", "UNI. OF HOSE", "FIX STAND 24*25", "METAL TROLLY 200T", "METAL TROLLY 400T", "GOD FAN MOTOR", "W/P FLT FEED HOSE", "HANDLE THELA SMALL", "MECH VOL(R)", "11KG BELT W/P", "SPIN CAP 8\"", "FIX STAND 21*22", "FIX STAND 22*23", "IFB SPUN LF", "200T BREAK SPRING", "VIRAT DOOR SPRING", "ROZA SM", "FIX STAND 26*27", "VID DA(VEM)", "6801 WT 15M", "SPIN LID LG 8.5KG", "W/P FULLY BAL. RING", "LG FULLY LID SHOCKER", "6800 WM JADI SHAFT", "WASH LID 6800", "12.5MFD CAPACITOR", "COVER IFB ELENA", "FIX STAND 25*26", "LLOYD SPIN TUB", "PCB ONIDA 518", "KNOB 6000", "LLOYD DRAIN SWITCH 3PIN", "LLOYD DRAIN SWITCH 2PIN", "SPIN LID W/P TANGO", "LLOYD COCK FRAME", "LLOYD OF HOSE", "TEFLON TAPE", "ELENA DOOR SWITCH", "GOD 6502 ST", "VID LIQUID", "VID SCALEGONE", "VID NEW DRAIN ASSEMBLY", "IFB SANATOR PS", "SCALENILL", "35T DX WT", "HAIER SM(R)", "SPIN MOTOR (ALU)", "GOD GDS950 M,PULLY", "KNOB GOD 6502", "ROZA M,PULLY", "OLP", "TVS D,BELLOW", "GOD NEW SUSP", "LG DD HANDLE", "GOD SM NEW(R)", "BPL MAIN MOTOR(R)", "LLOYD BREAK WIRE", "SANYO PULSATOR", "DRUM CLEAN", "COVER FRIDGE TOP", "BS65 BREAK WHEEL", "ONIDA DBL 15MT", "KNOB W/P SPARKLE", "FIX STAND 23*24", "WONDER TAP", "IFB SANATOR GASKET", "COVER IFB(O)TL", "COVER FULLY LG TRANS", "IFB 40LTR FOLDED HOSE", "DG MARINE D,ASSY", "HAIER BUZZER", "772 BELT", "OF HOSE 14\"", "OF HOSE 16\"", "LG NEW SW BODY", "M640 BELT", "GOD WM(R)", "SAM PS(CHINA)", "1006 SW BODY", "VID DUMP VALVE", "BIG BOTTEL", "6072 WT", "VID NIWA ST", "IFB BUSH(BIG)", "FEED HOSE 18\"", "KNOB W/P NEW", "360 8KG LID", "MECH SAM(BIG PULLY)", "BELT GOD", "TUB CLEAN", "HUB BOLT-LOCK", "PCB NIWA", "SPIN CAP LLOYD", "6800 MAXI ELBOW", "FEED HOSE SERINA", "W/P ACE SELECTOR SWITCH", "BS40 PULSATOR", "EKL MAIN MOTOR(R)", "VID NEW PULSATOR", "BOSCH DOOR SWITCH", "FIX STAND 21*21", "11+3.5 CAPACITOR", "6800 FEED HOSE(WITH ELBOW)", "200T FILTER FRAME", "LG SM (SHOCKET)", "BRAKE WHEEL BS40", "PCB EKL SEMI", "LG OF HOSE NEW", "PANASONIC SEMI SUSP", "22V TT MOTOR", "LG FUSE", "GOD SM GDS950", "SHARP DA", "KNOB HAIER NEW", "TVS CROSS ST", "FIX STAND 26*28", "SCREW DRIVER(7 IN 1)", "STUBY BIG", "MHJ DRAIN LEVER", "COVER IFB TOP LOAD 8KG", "UNI. ADAPTOR", "SPIN MOTOR 45W VIDEOCON", "LLOYD FEED HOSE", "LCD STAND", "W/P WM(R)", "ONIDA SM(OLD MODEL)", "LYGINIC DESCALE(PREMIUM-500gr)", "WASH MOTOR (OM)", "VOLTAS TIMER 35M (BEKO)", "475 BELT", "IFB GASKET 320", "WIND JET DRY SPIN LID 1020 (ORG TYPE)", "PCB LG FLT INVERTER", "COVER IFB FL 10KG", "PCB MIDEA", "SAM BALANCER RING", "AUTO INLET W/P(2M)", "LLOYD HUB", "GEAR BOX", "SAM GASKET", "MECH (DEFECTIVE)", "W/P 123 PS", "IFB CARBON SET", "SAM GASKET(3198)", "FRESH & CLEAN LF (GREEN)", "BELT", "IFB ECO-CRYSTAL GREEN"];
+const PARTIES = ["BISWAL ENTERPRISES,BHUBANESHWAR", "PursottamBhai,BHAVNAGAR", "HIMALAY REF,RAJKOT", "Dwarkesh Care Center - JAMNAGAR", "Indore Service Center,INDORE", "SHRI RAM REF,JODHPUR", "PRAKASH REF,BHUJ", "S V INDUSTRIES,HYDERABAD", "NAAZ REF,ANAND", "Jay Bahuchar Ref,Morbi", "SHRINATH REF,RAJKOT", "MOHD ZIAUDDIN ANSARI-CHANDIGARH", "S S Ref. & Spares - Harda", "Mahaveer Trading-Raipur", "CLASSIC ELE,AURANGABAD", "KAILASH FRIDGE AIR COOL-PUNE", "BALAJI REF,SURAT", "GAYATRI REF,SURAT", "LUCKY REF-Bilimora", "Shree Aaijee Sales Services-PUNE", "BHAGAT REF - BHUJ", "Patidar Sales,S'nagar", "AAKASH ELE-JUNAGADH", "HIMALAY REF,BILASPUR", "Alpha Ele,Bhavnagar", "VISHWAKARMA SERVICES,PALANPUR", "Naman Spares - Delhi", "APNA  REF - KABILPUR", "Om Sai Ram Ref-Ulhasnagar", "DELIGHT SERVICES,SILVASSA", "S S DISTRIBUTORS,JAIPUR", "Jatin Ref - AKOLA", "AUM ELE,BARODA", "CHIRAG ENT,KABILPUR", "Mangalam Sales,Udaipur", "Rahul Refrigeration-Dhamnod", "Dhanera Ref - Gandhinagar", "RITESH TRADING CORPORATION,INDORE", "AIRCONDS,THAMASSERY(KERALA)", "BANSI REF,RAJKOT", "SHANTI TRADERS,VAPI", "MAHALAXMI ELE,BANSWADA", "NEW STAR ENTERPRISES - BHANDARA", "CMK AIRCON,VIJAYAWADA", "S K TRADING COMPANY,MARGAO", "SMART REFRIGERATION-HMT", "PADMAVATI ENT,UDAIPUR", "S K SALES AND SERVICE - INDORE", "LUXURY REF,PALANPUR", "Mahesh Ele - Bhachau", "RELIANCE ELE,BRD", "FINE REF - CHHAPI", "VISWKARMA REF,PORBANDAR", "GAYATRI REF,AMRELI", "SHANTI AIRCON,KAMREJ", "Bharat Ele - Surat", "BIMAL COOLING,GANDHIDHAM", "RANNADE REF,JUNAGADH", "PATEL SALES,SURAT", "Decent Service,Valsad", "Arbuda Sales & Service - SUMERPUR", "ASHOK ELE,ADIPUR", "ARROW REF - PATAN", "Khodiyar Ref & Ele - KADI", "S K ELE. & REF. - JALANDHAR", "Galaxy Electronic-NEEMUCH", "RUDRAKSH ELE - KUKSHI", "Shiva Refrigeration - SALEM", "Hatemi Ele - Ratlam", "J K MARKETING,AMRELI", "Anand Motor,Dhrangadhra", "AMBICA REFRIGERATION,BAYAD", "Amar Ref-Dahod", "Shiva Spare Parts - Tiruppur", "SINDHOI REF,MORBI", "STAR LINE SPARE PARTS-SOLAPUR", "DIVYA ELE,BRD", "SPEED ENTERPRISE,DAHOD", "TULSI REF,CHENNAI", "MANISH ENT,UDAIPUR", "Navjivan - Nadiad", "SPARES KORNER,AJMER", "Bengal Electric & Refrigeratin Co.,KOLKATA", "A P Ref. - Mangrol", "SHREE AMBIKA SALES & SERVICE,PALANPUR", "BHADRESH SPARES - SRT", "Kirti Ent,Diyodar", "MAHADEV REF - MORBI", "CLASSIC REF,HMT", "SHUBHAM REF,VADALI", "S R REFRIGERATION,GANDHIDHAM", "BRAHMANI REFRIGERATION,ANJAR", "SHREE BALAJI REF - MORBI", "Kirti Ref,Patan", "SHREE RAM REF,MEHSANA", "LUCKY COOLMAX REF-BHILWARA", "SHREEJI ELECTRIC CENTER,BRD", "SAI REFRIGERATION - AHMEDNAGAR", "SHANTI SALES,SURAT", "Lucky - Anand", "HARIKRUPA REF. & ELE.,CHITTORGARH", "J P Electronics-BHOLAV", "AMBIKA ENT-RAJKOT", "KRISHNA REF,S'nagar", "SHEETAL REF,IDAR", "Sai Machinery-NEEMUCH", "NIRAV REF,ANJAR", "CHACHA BHATIJA - IDAR", "KULDEVI - SIDDHPUR", "GAYATRI REF,JASDAN", "OMKAR - KARWAR", "LUCKY REFRIGERATION-Viramgam", "SUVIDHA ELE,MAHUVA", "OSIYA - CHENNAI", "AMBICA ELE,KADI", "Fatemi Ele,Dondhaicha", "Spare Home, Indore", "JayBhai - Morbi", "HimanshuBhai,VISNAGAR", "JAI AMBE SPARES,SAVARKUNDLA", "PIYUSH KUMAWAT-Surat", "KUNJ REFRIGREATTION,GODHRA", "MATESHWARI REF - BEAWAR", "CHAMUNDA ELE. - BHACHAU", "HARSHA ENT-BEAWAR", "AARADHYA REF. - PALANPUR", "MAGESH SHA - KANCHIPURAM", "M V REF,HMT", "N JOSEPH - Coonoor", "SHREEJI SERVICES,KAPADWANJ", "MAA REF,DHRANGADHRA", "ANAND FRIDGE,UNJHA", "RADHE HOME APPLIANCES - JAIPUR", "SUBH MANGAL HOME Appl.,AHOR", "NATIONAL REF,VIRAMGAM", "BOORHANI REF - ZALOD", "RAJ ELE,MORBI", "NARAYAN ELE-KAPADWANJ", "Subh Laxmi Refrigeration(MT ABU)", "AL HUSSAIN,DAHOD", "BABA REF - ANANTAPURAM", "CHAMUNDA REF,DEESA", "NAVKAR REF,A'war/BCH", "PADMAVATI ELE,DEESA", "COOL LINE REF,KADI", "MURLIDHAR ELE - BHACHAU", "HUSSAIN,HMT", "MOHSIN,KESHOD", "NIKHILBHAI -JAMNAGAR", "JayeshBhai,BARWALA", "NATIONAL REF,A'war", "Jinal Refrigration,Sihor", "SHAKTI MOTOR,PALITANA", "Kanak Refrigration,NAVSARI", "NEW POONAM ELECTRIC,SIDDHPUR", "PATEL FRIDGE,HALWAD", "GULAM MADAR - MEHSANA", "GEETANJALI ELE,UNJHA", "NAVDURGA ENT,MEHSANA", "STAR REF. - IDAR", "RAJ SERVICE POINT,JODHPUR", "JAY GOGA SPARE PARTS & REF. - BHAMBHAR", "MUSTAQ,PATAN", "Vinayaka Traders-COIMBATORE", "Kaushal Ref,Botad", "KARAN REF,MUNDRA", "DURGA SALES AGENCY,DHANERA", "DEEP REFRIGERATION-ANJAR", "LIZA ELE,MAHUVA", "MEGHA ELE,VISNAGAR", "S K ELE,HMT", "LAXMI SUPPLIERS-Shahada", "RefCARE,NAGPUR", "SAI SERVICE CENTER - BOMBAY", "M D Appl,RAJKOT", "RAJDEEP ENT - MUNDRA", "INDIAN REF,MEHSANA", "Hitesh Eng,UNA", "SAGAR REF,JUNAGADH", "SAIKRUPA FRIDGE,KALOL", "R3 Ref. & Electronics - VYARA", "RIZVAN BHATT,IDAR", "Veerkrupa Refrigeration,Palanpur", "MUNAWAR-MODASA", "APNA ENTERPRISE,BARDOLI", "MOMAI ELE - SAMAKHIALI", "SHREE RAM REF,UNA", "Parmar Refrigeration-ANJAR", "BASIR - VADALI", "MAA HARSIDDHI REF - JODHPUR", "GEETA ELE,PATAN", "JAYESH PRAJAPATI,MEHSANA", "SHIV REF - BHAVNAGAR", "WONDER COOL,RAJKOT", "Rahat Cool Center-RATLAM", "JAI REF,BOTAD", "RAJVI COOL LINE - VALSAD", "NEW CHUDASMA REF,RAJULA", "Ganpati Fridge(ADAJAN)", "Dinesh Sharma,Pratapgarh", "BOORHANI ELE,DAHOD", "BAFNA SPARES,JODHPUR", "SURESHBHAI,ABU-ROAD", "BHAGWATI ELE. - KATHLAL", "SHIVAM ELE,GONDAL", "Ambica Refrigeration,PATAN", "BOMBAY TV,GONDAL", "SHANTI ENG - BRD", "GANPATI FRIDGE(UDHNA)", "Uday Trading,SIDDHPUR", "FALGUN PATEL,PATAN", "OM SHANTI,JUNAGADH", "MARUTINANDAN REF-MUNDRA", "RAJ REF,MODASA", "MAHALAXMI ELE,RAJKOT", "GAYATRI REF,IDAR", "NATIONAL ELE,PRANTIJ", "TECH SERVICE-Thanjavur", "DIPESH TANK,DURG", "MONAL ENT,SIROHI", "UMIYAJI REF,BOTAD", "JAY CHAMUNDA REF.- THARAD", "RAJ REFRIGIRATION - RAJAHMUNDRY", "BELA ELE,UNJHA", "SHAH ELE,HMT", "MUSIC CENTER,KODINAR", "KRISHNA SALES,JUNAGADH", "SHREEJI REF. - JAMNAGAR", "KHODIYAR REF,HMT", "Sangam Network,TALOD", "ILIYAS BHAI,BOTAD", "HARSH FREEZ - HMT", "MEHUL REF - BHAVNAGAR", "NUTAN COOLING - BHAVNAGHAR", "Bharat Ref-Junagadh", "Advance Spare House-RATLAM", "Gujarat Aircon-SURAT", "PERFECT SPARES & SERVICE - BHAVNAGAR", "Gajanand Services,JUNAGADH", "SITARAM - BOTAD", "JIYA REF,SURAT", "VINAYAK REF,PORBANDAR", "MARUTI REF,BHUJ", "GADHVI,S'nagar"];
+
+let products = (localStorage.getItem('spares_products') ? JSON.parse(localStorage.getItem('spares_products')) : PRODUCTS);
+let parties = (localStorage.getItem('spares_parties') ? JSON.parse(localStorage.getItem('spares_parties')) : [...PARTIES]);
+// Merge any saved parties on top of master list
+if (localStorage.getItem('spares_parties')) {
+  const saved = JSON.parse(localStorage.getItem('spares_parties'));
+  saved.forEach(p => { if (!parties.includes(p)) parties.push(p); });
+  parties = [...new Set(parties)];
+}
+let orders = JSON.parse(localStorage.getItem('spares_orders_demo') || '[]');
+let currentFilter = 'all';
+let currentSearch = '';
+let newOrderItems = [];
+let currentOrderId = null;
+let photosMap = {}; // orderId+product -> base64
+
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+window.onload = function() {
+  document.getElementById('orderDateDisplay').textContent = new Date().toLocaleDateString('en-IN', {weekday:'short',day:'numeric',month:'short'});
+  // Script URL is baked in — skip setup, go straight to role picker
+  if (ROLE) {
+    bootApp();
+  } else {
+    showRolePicker();
+  }
+};
+
+function bootApp() {
+  // Persist URL so it survives page refresh
+  if (SCRIPT_URL) localStorage.setItem('spares_script_url', SCRIPT_URL);
+  document.getElementById('setupScreen').style.display = 'none';
+  document.getElementById('roleModal').classList.remove('open');
+  document.getElementById('mainApp').classList.remove('hidden');
+  applyRole();
+  loadData();
+}
+
+
+// ─── SETUP WIZARD ─────────────────────────────────────────────────────────────
+function wsNext(step) {
+  for (let i = 1; i <= 4; i++) {
+    document.getElementById('ws'+i).style.display = i === step ? 'block' : 'none';
+    const dot = document.getElementById('wdot'+i);
+    dot.classList.remove('active','done');
+    if (i < step) dot.classList.add('done');
+    if (i === step) dot.classList.add('active');
+    if (i < 4) {
+      const line = document.getElementById('wline'+i);
+      if (line) line.style.background = i < step ? 'var(--accent)' : 'var(--border)';
+    }
+  }
+  document.getElementById('setupProgress').style.width = (step * 25) + '%';
+  document.getElementById('wsPanel').scrollTop = 0;
+}
+
+function wsBack(step) { wsNext(step); }
+
+function clearTestResult() {
+  document.getElementById('testResult').style.display = 'none';
+  document.getElementById('continueBtn').style.display = 'none';
+  document.getElementById('testConnBtn').style.display = 'block';
+}
+
+async function testConnection() {
+  const url = document.getElementById('scriptUrl').value.trim();
+  const resultEl = document.getElementById('testResult');
+  const btn = document.getElementById('testConnBtn');
+  if (!url || !url.startsWith('https://script.google.com')) {
+    resultEl.style.display = 'block';
+    resultEl.style.background = 'var(--danger-light)';
+    resultEl.style.border = '1px solid #f0b8b8';
+    resultEl.innerHTML = '❌ <strong>Invalid URL.</strong> It should start with <code>https://script.google.com/macros/s/</code>';
+    return;
+  }
+  btn.textContent = 'Testing…';
+  btn.disabled = true;
+  resultEl.style.display = 'none';
+  try {
+    const res = await fetch(url + '?t=' + Date.now(), {
+      method: 'POST',
+      body: JSON.stringify({action:'getOrders'}),
+      headers: {'Content-Type':'text/plain'}
+    });
+    const data = await res.json();
+    if (Array.isArray(data)) {
+      resultEl.style.display = 'block';
+      resultEl.style.background = 'var(--accent-light)';
+      resultEl.style.border = '1px solid var(--accent-border)';
+      resultEl.innerHTML = '✅ <strong>Connected successfully!</strong> Your Google Sheet is ready.';
+      document.getElementById('continueBtn').style.display = 'block';
+      btn.style.display = 'none';
+    } else {
+      throw new Error('Unexpected response');
+    }
+  } catch(e) {
+    resultEl.style.display = 'block';
+    resultEl.style.background = 'var(--warn-light)';
+    resultEl.style.border = '1px solid var(--warn-border)';
+    resultEl.innerHTML = '⚠️ <strong>Could not connect.</strong> Make sure you set "Who has access" to <strong>Anyone</strong> and re-deployed after saving.';
+    btn.textContent = 'Retry';
+    btn.disabled = false;
+  }
+}
+// ─── SETUP ────────────────────────────────────────────────────────────────────
+function saveScriptUrl() {
+  const url = document.getElementById('scriptUrl').value.trim();
+  if (!url.startsWith('https://script.google.com')) {
+    showToast('Please enter a valid Apps Script URL');
+    return;
+  }
+  SCRIPT_URL = url;
+  localStorage.setItem('spares_script_url', url);
+  showRolePicker();
+}
+
+function useDemoMode() {
+  DEMO_MODE = true;
+  localStorage.setItem('spares_demo', 'true');
+  // Load sample products for demo
+  // Products already loaded from embedded list
+  showRolePicker();
+}
+
+function copyScript() {
+  const text = document.getElementById('scriptCode').textContent;
+  navigator.clipboard.writeText(text).then(() => showToast('Script copied!'));
+}
+
+// ─── ROLE ─────────────────────────────────────────────────────────────────────
+function selectRole(role) {
+  ROLE = role;
+  localStorage.setItem('spares_role', role);
+  bootApp();
+}
+
+function applyRole() {
+  const icons = {sales:'📋',warehouse:'📦',accountant:'🧾',admin:'⚙️'};
+  const labels = {sales:'Sales',warehouse:'Warehouse',accountant:'Accountant',admin:'Admin'};
+  document.getElementById('roleIcon').textContent = icons[ROLE] || '👤';
+  document.getElementById('roleName').textContent = labels[ROLE] || ROLE;
+
+  // Show/hide tabs
+  document.getElementById('tab-new').style.display = (ROLE === 'sales' || ROLE === 'admin') ? '' : 'none';
+  document.getElementById('tab-products').style.display = (ROLE === 'admin') ? '' : 'none';
+  document.getElementById('fabNewOrder').style.display = (ROLE === 'sales' || ROLE === 'admin') ? '' : 'none';
+}
+
+function showRolePicker() {
+  document.getElementById('roleModal').classList.add('open');
+}
+
+// ─── NAVIGATION ──────────────────────────────────────────────────────────────
+function showTab(tab) {
+  ['orders','new','products'].forEach(t => {
+    document.getElementById('view-'+t).classList.toggle('hidden', t !== tab);
+    document.getElementById('tab-'+t)?.classList.toggle('active', t === tab);
+  });
+  if (tab === 'new') resetNewOrderForm();
+  if (tab === 'products') renderProductList();
+}
+
+// ─── DATA LOADING ─────────────────────────────────────────────────────────────
+async function loadData() {
+  if (DEMO_MODE) {
+    renderOrders();
+    return;
+  }
+  try {
+    // Load orders
+    const res = await api({action:'getOrders'});
+    orders = res;
+    // Load parties
+    const pr = await api({action:'getParties'});
+    parties = pr;
+    // Load products
+    const prd = await api({action:'getProducts'});
+    if (prd.length > 0) {
+      products = prd;
+      localStorage.setItem('spares_products', JSON.stringify(products));
+    }
+    renderOrders();
+  } catch(e) {
+    showToast('Could not connect to sheet. Using cached data.');
+    renderOrders();
+  }
+}
+
+async function api(data) {
+  const url = SCRIPT_URL + '?t=' + Date.now();
+  const res = await fetch(url, {
+    method: 'POST',
+    body: JSON.stringify(data),
+    headers: {'Content-Type':'text/plain'}
+  });
+  return res.json();
+}
+
+// ─── ORDERS RENDER ────────────────────────────────────────────────────────────
+function renderOrders() {
+  let filtered = [...orders];
+  if (currentFilter !== 'all') filtered = filtered.filter(o => o.status === currentFilter);
+  if (currentSearch) filtered = filtered.filter(o => o.party.toLowerCase().includes(currentSearch.toLowerCase()));
+
+  // Accountant only sees dispatched/billed
+  if (ROLE === 'accountant') filtered = filtered.filter(o => o.status === 'dispatched' || o.status === 'billed');
+
+  // Sort newest first
+  filtered.sort((a,b) => b.id - a.id);
+
+  const list = document.getElementById('ordersList');
+  if (filtered.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">No orders here</div><div>Orders will appear once created</div></div>`;
+    return;
+  }
+
+  list.innerHTML = filtered.map(o => {
+    const itemCount = o.items ? o.items.filter(i => !i.deleted).length : 0;
+    const statusHtml = `<span class="status status-${o.status}">${o.status}</span>`;
+    const dateStr = o.date ? new Date(o.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
+    return `<div class="order-item" onclick="openOrder('${o.id}')">
+      <div>
+        <div class="order-number">#${o.id}</div>
+        <div class="order-party">${o.party}</div>
+        <div class="order-meta">${itemCount} item${itemCount!==1?'s':''} · ${dateStr}</div>
+      </div>
+      <div class="order-right">
+        ${statusHtml}
+        ${o.note ? `<span style="font-size:11px;color:var(--text3)">📝</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  // Update pending badge
+  const pending = orders.filter(o => o.status === 'pending').length;
+  const badge = document.getElementById('pendingBadge');
+  if (pending > 0 && ROLE !== 'accountant') {
+    badge.style.display = 'inline-flex';
+    badge.textContent = pending;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function filterOrders(status, el) {
+  currentFilter = status;
+  document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderOrders();
+}
+
+function searchOrders(q) {
+  currentSearch = q;
+  renderOrders();
+}
+
+// ─── ORDER DETAIL ─────────────────────────────────────────────────────────────
+function openOrder(id) {
+  const order = orders.find(o => String(o.id) === String(id));
+  if (!order) return;
+  currentOrderId = id;
+
+  document.getElementById('modalPartyName').textContent = order.party;
+  document.getElementById('modalOrderId').textContent = '#' + order.id + (order.date ? ' · ' + new Date(order.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '');
+  document.getElementById('modalStatus').innerHTML = `<span class="status status-${order.status}">${order.status}</span>`;
+
+  const items = order.items || [];
+  let body = '';
+
+  if (order.note) {
+    body += `<div class="note-row" style="margin-bottom:12px;">📝 ${order.note}</div>`;
+  }
+
+  // Items table
+  body += `<table class="items-table"><thead><tr>
+    <th>Product</th>
+    <th style="text-align:right">Qty</th>
+    <th style="text-align:right">Price</th>
+    <th style="text-align:center">Photo</th>
+    ${(ROLE==='warehouse'||ROLE==='admin') && order.status==='pending' ? '<th></th>' : ''}
+  </tr></thead><tbody id="modalItemsBody">`;
+
+  items.filter(i => !i.deleted).forEach((item, idx) => {
+    const canEdit = (ROLE === 'warehouse' || ROLE === 'admin') && (order.status === 'pending' || order.status === 'ready');
+    const photoKey = id + '_' + item.product;
+    const hasPhoto = photosMap[photoKey] || item.photoURL;
+
+    let qtyCell = '';
+    if (canEdit) {
+      qtyCell = `<div class="qty-edit-wrap">
+        ${item.finalQty != item.qty ? `<span class="strikethrough">${item.qty}</span>` : ''}
+        <input class="inline-input" type="number" value="${item.finalQty||item.qty}" min="0"
+          onchange="updateItemQty('${id}','${item.product}',this.value)" />
+      </div>`;
+    } else {
+      qtyCell = `<span>
+        ${item.finalQty != item.qty ? `<span class="strikethrough text-sm">${item.qty}</span> ` : ''}
+        <strong>${item.finalQty||item.qty}</strong>
+      </span>`;
+    }
+
+    let priceCell = '';
+    if (canEdit) {
+      priceCell = `<input class="inline-input" type="number" value="${item.price||''}" placeholder="0" min="0"
+        onchange="updateItemPrice('${id}','${item.product}',this.value)" />`;
+    } else {
+      priceCell = item.price ? `<span class="text-mono">₹${item.price}</span>` : `<span style="color:var(--text3)">—</span>`;
+    }
+
+    body += `<tr id="row_${idx}">
+      <td><div class="product-name">${item.product}</div></td>
+      <td style="text-align:right">${qtyCell}</td>
+      <td style="text-align:right">${priceCell}</td>
+      <td style="text-align:center">
+        ${hasPhoto
+          ? `<img class="photo-thumb" src="${photosMap[photoKey]||item.photoURL}" onclick="previewPhoto('${photosMap[photoKey]||item.photoURL}')">`
+          : (canEdit ? `<button class="photo-btn" type="button" onclick="triggerPhotoUpload('${id}','${item.product}')">📷 Photo</button>` : '<span style="color:var(--text3);font-size:12px">—</span>')}
+      </td>
+      ${canEdit ? `<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem('${id}','${item.product}')">✕</button></td>` : ''}
+    </tr>`;
+  });
+
+  body += '</tbody></table>';
+
+  // Action buttons
+  body += '<div class="action-bar">';
+
+  if (ROLE === 'warehouse' || ROLE === 'admin') {
+    if (order.status === 'pending') {
+      body += `<button class="btn btn-primary btn-sm btn-full" onclick="updateStatus('${id}','ready')">Mark Ready ✓</button>`;
+    } else if (order.status === 'ready') {
+      body += `<button class="btn btn-primary btn-sm btn-full" onclick="updateStatus('${id}','dispatched')">Mark Dispatched 🚚</button>`;
+    }
+  }
+
+  if (ROLE === 'accountant' || ROLE === 'admin') {
+    if (order.status === 'dispatched') {
+      body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print</button>`;
+      body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','billed')" style="margin-left:auto">Mark Billed ✓</button>`;
+    } else if (order.status === 'billed') {
+      body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print Bill</button>`;
+    }
+  }
+
+  if (ROLE === 'admin') {
+    body += `<button class="btn btn-danger btn-sm" style="margin-left:auto" onclick="deleteOrder('${id}')">Delete</button>`;
+  }
+
+  body += '</div>';
+
+  document.getElementById('modalBody').innerHTML = body;
+  document.getElementById('orderModal').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('orderModal').classList.remove('open');
+  currentOrderId = null;
+}
+
+function updateItemQty(orderId, product, val) {
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) return;
+  const item = order.items.find(i => i.product === product);
+  if (item) item.finalQty = parseInt(val) || 0;
+  if (DEMO_MODE) saveDemo();
+  else api({action:'updateOrder', id:orderId, items: order.items});
+}
+
+function updateItemPrice(orderId, product, val) {
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) return;
+  const item = order.items.find(i => i.product === product);
+  if (item) item.price = val;
+  if (DEMO_MODE) saveDemo();
+  else api({action:'updateOrder', id:orderId, items: order.items});
+}
+
+function deleteItem(orderId, product) {
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) return;
+  const item = order.items.find(i => i.product === product);
+  if (item) item.deleted = true;
+  if (DEMO_MODE) saveDemo();
+  else api({action:'updateOrder', id:orderId, items: order.items});
+  openOrder(orderId);
+  showToast('Item removed');
+}
+
+function deleteOrder(orderId) {
+  if (!confirm('Delete this order?')) return;
+  orders = orders.filter(o => String(o.id) !== String(orderId));
+  if (DEMO_MODE) saveDemo();
+  closeModal();
+  renderOrders();
+  showToast('Order deleted');
+}
+
+async function updateStatus(orderId, status) {
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) return;
+  order.status = status;
+  if (DEMO_MODE) saveDemo();
+  else await api({action:'updateOrder', id:orderId, status:status});
+  closeModal();
+  renderOrders();
+  showToast('Status updated: ' + status);
+}
+
+function attachPhoto(event, orderId, product, idx) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const key = orderId + '_' + product;
+    photosMap[key] = e.target.result;
+    openOrder(orderId); // re-render
+    showToast('Photo attached');
+  };
+  reader.readAsDataURL(file);
+}
+
+function previewPhoto(src) {
+  document.getElementById('imgPreviewSrc').src = src;
+  document.getElementById('imgPreview').style.display = 'flex';
+}
+
+function printOrder(orderId) {
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) return;
+  const items = (order.items||[]).filter(i=>!i.deleted);
+  const rows = items.map(i => '<tr><td>'+i.product+'</td><td style="text-align:right">'+(i.finalQty||i.qty)+'</td><td style="text-align:right">'+(i.price ? '₹'+i.price : '—')+'</td></tr>').join('');
+  const total = items.reduce((s,i) => s + (parseFloat(i.price)||0) * (parseInt(i.finalQty||i.qty)||0), 0);
+  const win = window.open('','_blank');
+  const html2 = '<!DOCTYPE html><html><head><title>Order #'+order.id+'</title>'
+    +'<style>body{font-family:sans-serif;padding:24px;max-width:500px;margin:0 auto}'
+    +'h2{margin-bottom:4px}p{color:#666;font-size:13px;margin-bottom:16px}'
+    +'table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ddd;font-size:13px}'
+    +'th{background:#f5f5f5;font-weight:600}tfoot td{font-weight:600;background:#f5f5f5}'
+    +'@media print{button{display:none}}</style></head>'
+    +'<body>'
+    +'<h2>'+order.party+'</h2>'
+    +'<p>Order #'+order.id+' &middot; '+(order.date ? new Date(order.date).toLocaleDateString('en-IN') : '')+' &middot; '+order.status+'</p>'
+    +'<table><thead><tr><th>Product</th><th style="text-align:right">Qty</th><th style="text-align:right">Price</th></tr></thead>'
+    +'<tbody>'+rows+'</tbody>'
+    +'<tfoot><tr><td colspan="2">Total</td><td style="text-align:right">&#8377;'+total.toFixed(2)+'</td></tr></tfoot>'
+    +'</table>'
+    +'<p style="margin-top:16px;font-size:11px;color:#999">Printed from Spares Portal</p>'
+    +'<button onclick="window.print()" style="margin-top:12px;padding:8px 16px;background:#1a6b3c;color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px">Print</button>'
+    +'</body></html>';
+  win.document.write(html2);
+  win.document.close();
+}
+
+// ─── NEW ORDER ────────────────────────────────────────────────────────────────
+function resetNewOrderForm() {
+  newOrderItems = [];
+  document.getElementById('partyInput').value = '';
+  document.getElementById('orderNote').value = '';
+  renderNewItems();
+}
+
+function cancelNewOrder() {
+  showTab('orders');
+}
+
+// Party autocomplete
+let partyBlurTimer;
+function searchParties(q) {
+  clearTimeout(partyBlurTimer);
+  const list = document.getElementById('partyList');
+  if (!q) { list.classList.add('hidden'); return; }
+  const matches = parties.filter(p => p.toLowerCase().includes(q.toLowerCase()));
+  let html = matches.slice(0,8).map(p => `<div class="autocomplete-item" onmousedown="selectParty('${p.replace(/'/g,"\\'")}')"><span>${p}</span></div>`).join('');
+  if (!matches.find(p => p.toLowerCase() === q.toLowerCase())) {
+    html += `<div class="autocomplete-add" onmousedown="addNewParty('${q.replace(/'/g,"\\'")}')">+ Add "${q}"</div>`;
+  }
+  list.innerHTML = html;
+  list.classList.remove('hidden');
+}
+
+function selectParty(name) {
+  document.getElementById('partyInput').value = name;
+  document.getElementById('partyList').classList.add('hidden');
+}
+
+function hidePartyList() {
+  partyBlurTimer = setTimeout(() => document.getElementById('partyList').classList.add('hidden'), 200);
+}
+
+async function addNewParty(name) {
+  parties.push(name);
+  localStorage.setItem('spares_parties', JSON.stringify(parties));
+  selectParty(name);
+  if (!DEMO_MODE) {
+    try { await api({action:'addParty', name}); } catch(e) {}
+  }
+  showToast(`Party "${name}" added`);
+}
+
+// Product autocomplete
+let prodBlurTimer;
+function searchProducts(q) {
+  clearTimeout(prodBlurTimer);
+  const list = document.getElementById('productList');
+  if (!q || q.length < 1) { list.classList.add('hidden'); return; }
+  const matches = products.filter(p => p.toLowerCase().includes(q.toLowerCase()));
+  if (matches.length === 0) { list.innerHTML = '<div style="padding:10px 12px;font-size:13px;color:var(--text3)">No products found</div>'; list.classList.remove('hidden'); return; }
+  list.innerHTML = matches.slice(0,10).map(p =>
+    `<div class="autocomplete-item" onmousedown="addItem('${p.replace(/'/g,"\\'")}')"><span>${p}</span></div>`
+  ).join('');
+  list.classList.remove('hidden');
+}
+
+function hideProdList() {
+  prodBlurTimer = setTimeout(() => document.getElementById('productList').classList.add('hidden'), 200);
+}
+
+function addItem(product) {
+  if (newOrderItems.find(i => i.product === product)) {
+    showToast('Already added');
+    document.getElementById('productSearch').value = '';
+    document.getElementById('productList').classList.add('hidden');
+    return;
+  }
+  newOrderItems.push({product, qty:1, price:'', photoData:null});
+  document.getElementById('productSearch').value = '';
+  document.getElementById('productList').classList.add('hidden');
+  renderNewItems();
+  document.getElementById('productSearch').focus();
+}
+
+function renderNewItems() {
+  const body = document.getElementById('newItemsBody');
+  const table = document.getElementById('newItemsTable');
+  const empty = document.getElementById('itemsEmpty');
+  document.getElementById('itemCount').textContent = `(${newOrderItems.length})`;
+
+  if (newOrderItems.length === 0) {
+    table.style.display = 'none';
+    empty.style.display = 'block';
+    return;
+  }
+  table.style.display = 'table';
+  empty.style.display = 'none';
+
+  body.innerHTML = newOrderItems.map((item, idx) => `
+    <tr>
+      <td><div class="product-name">${item.product}</div></td>
+      <td style="text-align:right">
+        <input class="inline-input" type="number" value="${item.qty}" min="1"
+          onchange="newOrderItems[${idx}].qty=parseInt(this.value)||1" />
+      </td>
+      <td style="text-align:right">
+        <input class="inline-input" type="number" value="${item.price}" placeholder="0" min="0"
+          onchange="newOrderItems[${idx}].price=this.value" />
+      </td>
+      <td style="text-align:center">
+        <button type="button" class="photo-btn ${item.photoData?'has-photo':''}" onclick="triggerNewPhotoUpload(${idx})">${item.photoData ? '✓ Photo' : '📷 Photo'}</button>
+      </td>
+      <td>
+        <button class="btn-icon" style="color:var(--danger)" onclick="removeNewItem(${idx})">✕</button>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function attachNewPhoto(event, idx) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => { newOrderItems[idx].photoData = e.target.result; renderNewItems(); showToast('Photo attached'); };
+  reader.readAsDataURL(file);
+}
+
+function removeNewItem(idx) {
+  newOrderItems.splice(idx, 1);
+  renderNewItems();
+}
+
+async function submitOrder() {
+  const party = document.getElementById('partyInput').value.trim();
+  if (!party) { showToast('Please select a party'); return; }
+  if (newOrderItems.length === 0) { showToast('Add at least one item'); return; }
+
+  const id = Date.now();
+  const order = {
+    id, party,
+    date: new Date().toISOString(),
+    status: 'pending',
+    note: document.getElementById('orderNote').value.trim(),
+    createdBy: ROLE,
+    items: newOrderItems.map(i => ({
+      product: i.product, qty: parseInt(i.qty)||1,
+      finalQty: parseInt(i.qty)||1, price: i.price||'',
+      photoURL:'', deleted: false
+    }))
+  };
+
+  // Store photos locally
+  newOrderItems.forEach(i => {
+    if (i.photoData) photosMap[id+'_'+i.product] = i.photoData;
+  });
+
+  orders.push(order);
+
+  if (DEMO_MODE) {
+    saveDemo();
+  } else {
+    try { await api({action:'saveOrder', ...order}); } catch(e) { showToast('Saved locally (sheet unreachable)'); }
+  }
+
+  showToast('Order submitted!');
+  showTab('orders');
+  renderOrders();
+}
+
+// ─── PRODUCTS TAB ─────────────────────────────────────────────────────────────
+function renderProductList() {
+  document.getElementById('prodCount').textContent = products.length + ' items';
+  filterProductList('');
+}
+
+function filterProductList(q) {
+  const list = document.getElementById('productListView');
+  const filtered = q ? products.filter(p => p.toLowerCase().includes(q.toLowerCase())) : products;
+  if (filtered.length === 0) {
+    list.innerHTML = '<div class="empty"><div class="empty-title">No products found</div></div>';
+    return;
+  }
+  list.innerHTML = filtered.slice(0,200).map((p,i) =>
+    `<div style="padding:10px 16px;border-bottom:1px solid var(--border);font-size:13px;display:flex;align-items:center;gap:10px;">
+      <span style="font-size:11px;color:var(--text3);font-family:monospace;min-width:32px;">${i+1}</span>
+      <span>${p}</span>
+    </div>`
+  ).join('') + (filtered.length > 200 ? `<div style="padding:10px 16px;font-size:12px;color:var(--text3)">Showing 200 of ${filtered.length}. Use search to narrow down.</div>` : '');
+}
+
+// ─── DEMO SAVE ────────────────────────────────────────────────────────────────
+function saveDemo() {
+  localStorage.setItem('spares_orders_demo', JSON.stringify(orders));
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2500);
+}
+
+// ─── PRODUCTS IMPORT ──────────────────────────────────────────────────────────
+// Called by user to paste product list (admin helper)
+function importProducts(list) {
+  products = list.split('\n').map(l=>l.trim()).filter(Boolean);
+  localStorage.setItem('spares_products', JSON.stringify(products));
+  showToast(products.length + ' products loaded');
+}
+
+// Allow loading product list from a text paste via console or URL
+// Usage: importProducts("product1\nproduct2\n...")
+window.importProducts = importProducts;
+</script>
+
+
+<!-- Single hidden file input for photo uploads -->
+<input type="file" id="globalPhotoInput" accept="image/*" capture="environment" style="display:none">
+
+<script>
+// Photo upload helpers using a single shared input (works on mobile)
+let _photoTarget = null; // {type:'order'|'new', orderId, product} or {type:'new', idx}
+
+function triggerPhotoUpload(orderId, product) {
+  _photoTarget = {type:'order', orderId, product};
+  const inp = document.getElementById('globalPhotoInput');
+  inp.value = '';
+  inp.click();
+}
+
+function triggerNewPhotoUpload(idx) {
+  _photoTarget = {type:'new', idx};
+  const inp = document.getElementById('globalPhotoInput');
+  inp.value = '';
+  inp.click();
+}
+
+document.getElementById('globalPhotoInput').addEventListener('change', function(e) {
+  const file = e.target.files[0];
+  if (!file || !_photoTarget) return;
+  const reader = new FileReader();
+  reader.onload = function(ev) {
+    if (_photoTarget.type === 'order') {
+      const key = _photoTarget.orderId + '_' + _photoTarget.product;
+      photosMap[key] = ev.target.result;
+      openOrder(_photoTarget.orderId);
+      showToast('Photo attached ✓');
+    } else {
+      newOrderItems[_photoTarget.idx].photoData = ev.target.result;
+      renderNewItems();
+      showToast('Photo attached ✓');
+    }
+  };
+  reader.readAsDataURL(file);
+});
+</script>
+</body>
+</html>
