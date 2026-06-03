@@ -571,6 +571,11 @@ function doGet(e){return doPost(e);}</pre>
         <div class="role-label">Accountant</div>
         <div class="role-desc">View & bill orders</div>
       </div>
+      <div class="role-option" onclick="selectRole('owner')">
+        <div class="role-icon">👔</div>
+        <div class="role-label">Owner</div>
+        <div class="role-desc">Set prices</div>
+      </div>
       <div class="role-option" onclick="selectRole('admin')">
         <div class="role-icon">⚙️</div>
         <div class="role-label">Admin</div>
@@ -606,6 +611,7 @@ function doGet(e){return doPost(e);}</pre>
         <div class="filter-pill active" onclick="filterOrders('all',this)">All</div>
         <div class="filter-pill" onclick="filterOrders('pending',this)">Pending</div>
         <div class="filter-pill" onclick="filterOrders('ready',this)">Ready</div>
+        <div class="filter-pill" onclick="filterOrders('priced',this)">Priced</div>
         <div class="filter-pill" onclick="filterOrders('dispatched',this)">Dispatched</div>
       </div>
 
@@ -867,8 +873,8 @@ function selectRole(role) {
 }
 
 function applyRole() {
-  const icons = {sales:'📋',warehouse:'📦',accountant:'🧾',admin:'⚙️'};
-  const labels = {sales:'Sales',warehouse:'Warehouse',accountant:'Accountant',admin:'Admin'};
+  const icons = {sales:'📋',warehouse:'📦',owner:'👔',accountant:'🧾',admin:'⚙️'};
+  const labels = {sales:'Sales',warehouse:'Warehouse',owner:'Owner',accountant:'Accountant',admin:'Admin'};
   document.getElementById('roleIcon').textContent = icons[ROLE] || '👤';
   document.getElementById('roleName').textContent = labels[ROLE] || ROLE;
 
@@ -935,8 +941,10 @@ function renderOrders() {
   if (currentSearch) filtered = filtered.filter(o => o.party.toLowerCase().includes(currentSearch.toLowerCase()));
 
   // Accountant only sees dispatched/billed
-  if (ROLE === 'accountant') filtered = filtered.filter(o => o.status === 'dispatched' || o.status === 'billed');
+  if (ROLE === 'accountant') filtered = filtered.filter(o => o.status === 'priced' || o.status === 'dispatched' || o.status === 'billed');
 
+  // Owner sees ready + priced only
+  if (ROLE === 'owner') filtered = filtered.filter(o => o.status === 'ready' || o.status === 'priced');
   // Sort newest first
   filtered.sort((a,b) => b.id - a.id);
 
@@ -964,7 +972,9 @@ function renderOrders() {
   }).join('');
 
   // Update pending badge
-  const pending = orders.filter(o => o.status === 'pending').length;
+  const pendingCount = orders.filter(o => o.status === 'pending').length;
+  const readyCount = orders.filter(o => o.status === 'ready').length;
+  const pending = ROLE === 'owner' ? readyCount : pendingCount;
   const badge = document.getElementById('pendingBadge');
   if (pending > 0 && ROLE !== 'accountant') {
     badge.style.display = 'inline-flex';
@@ -1014,6 +1024,7 @@ function openOrder(id) {
 
   items.filter(i => !i.deleted).forEach((item, idx) => {
     const canEdit = (ROLE === 'warehouse' || ROLE === 'admin') && (order.status === 'pending' || order.status === 'ready');
+      const canPrice = (ROLE === 'owner' || ROLE === 'admin') && (order.status === 'ready' || order.status === 'priced');
     const photoKey = id + '_' + item.product;
     const hasPhoto = photosMap[photoKey] || item.photoURL;
 
@@ -1032,7 +1043,7 @@ function openOrder(id) {
     }
 
     let priceCell = '';
-    if (canEdit) {
+    if (canPrice) {
       priceCell = `<input class="inline-input" type="number" value="${item.price||''}" placeholder="0" min="0"
         onchange="updateItemPrice('${id}','${item.product}',this.value)" />`;
     } else {
@@ -1060,15 +1071,23 @@ function openOrder(id) {
   if (ROLE === 'warehouse' || ROLE === 'admin') {
     if (order.status === 'pending') {
       body += `<button class="btn btn-primary btn-sm btn-full" onclick="updateStatus('${id}','ready')">Mark Ready ✓</button>`;
-    } else if (order.status === 'ready') {
-      body += `<button class="btn btn-primary btn-sm btn-full" onclick="updateStatus('${id}','dispatched')">Mark Dispatched 🚚</button>`;
+    }
+  }
+
+  if (ROLE === 'owner' || ROLE === 'admin') {
+    if (order.status === 'ready') {
+      body += `<button class="btn btn-primary btn-sm btn-full" onclick="updateStatus('${id}','priced')">Mark Priced ✓</button>`;
+    } else if (order.status === 'priced') {
+      body += `<button class="btn btn-secondary btn-sm" onclick="updateStatus('${id}','ready')">← Back to Ready</button>`;
+      body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','dispatched')" style="margin-left:auto">Mark Dispatched 🚚</button>`;
     }
   }
 
   if (ROLE === 'accountant' || ROLE === 'admin') {
-    if (order.status === 'dispatched') {
+    if (order.status === 'priced' || order.status === 'dispatched') {
       body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print</button>`;
-      body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','billed')" style="margin-left:auto">Mark Billed ✓</button>`;
+      if (order.status === 'priced') body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','dispatched')" style="margin-left:auto">Mark Dispatched 🚚</button>`;
+      if (order.status === 'dispatched') body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','billed')" style="margin-left:auto">Mark Billed ✓</button>`;
     } else if (order.status === 'billed') {
       body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print Bill</button>`;
     }
