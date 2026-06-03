@@ -514,8 +514,8 @@
   }
   if(action==='addParty'){
     var ps=ss.getSheetByName('Parties')||ss.insertSheet('Parties');
-    if(ps.getLastRow()===0)ps.appendRow(['Name']);
-    ps.appendRow([data.name]);
+    if(ps.getLastRow()===0)ps.appendRow(['Name','Mobile']);
+    ps.appendRow([data.name, data.mobile||'']);
     return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
   }
   if(action==='getProducts'){
@@ -662,7 +662,6 @@ function doGet(e){return doPost(e);}</pre>
                 <th style="width:40%">Product</th>
                 <th style="width:15%;text-align:right">Qty</th>
                 <th style="width:20%;text-align:right">Price</th>
-                <th style="width:15%;text-align:center">Photo</th>
                 <th style="width:10%"></th>
               </tr>
             </thead>
@@ -751,7 +750,7 @@ let currentFilter = 'all';
 let currentSearch = '';
 let newOrderItems = [];
 let currentOrderId = null;
-let photosMap = {}; // orderId+product -> base64
+let partiesData = JSON.parse(localStorage.getItem('spares_parties_data') || '{}');
 
 // ─── INIT ─────────────────────────────────────────────────────────────────────
 window.onload = function() {
@@ -1018,15 +1017,12 @@ function openOrder(id) {
     <th>Product</th>
     <th style="text-align:right">Qty</th>
     <th style="text-align:right">Price</th>
-    <th style="text-align:center">Photo</th>
     ${(ROLE==='warehouse'||ROLE==='admin') && order.status==='pending' ? '<th></th>' : ''}
   </tr></thead><tbody id="modalItemsBody">`;
 
   items.filter(i => !i.deleted).forEach((item, idx) => {
     const canEdit = (ROLE === 'warehouse' || ROLE === 'admin') && (order.status === 'pending' || order.status === 'ready');
       const canPrice = (ROLE === 'owner' || ROLE === 'admin') && (order.status === 'ready' || order.status === 'priced');
-    const photoKey = id + '_' + item.product;
-    const hasPhoto = photosMap[photoKey] || item.photoURL;
 
     let qtyCell = '';
     if (canEdit) {
@@ -1053,13 +1049,7 @@ function openOrder(id) {
     body += `<tr id="row_${idx}">
       <td><div class="product-name">${item.product}</div></td>
       <td style="text-align:right">${qtyCell}</td>
-      <td style="text-align:right">${priceCell}</td>
-      <td style="text-align:center">
-        ${hasPhoto
-          ? `<img class="photo-thumb" src="${photosMap[photoKey]||item.photoURL}" onclick="previewPhoto('${photosMap[photoKey]||item.photoURL}')">`
-          : (canEdit ? `<button class="photo-btn" type="button" onclick="triggerPhotoUpload('${id}','${item.product}')">📷 Photo</button>` : '<span style="color:var(--text3);font-size:12px">—</span>')}
-      </td>
-      ${canEdit ? `<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem('${id}','${item.product}')">✕</button></td>` : ''}
+      <td style="text-align:right">${priceCell}</td>${canEdit ? `<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem('${id}','${item.product}')">✕</button></td>` : ''}
     </tr>`;
   });
 
@@ -1157,19 +1147,6 @@ async function updateStatus(orderId, status) {
   showToast('Status updated: ' + status);
 }
 
-function attachPhoto(event, orderId, product, idx) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const key = orderId + '_' + product;
-    photosMap[key] = e.target.result;
-    openOrder(orderId); // re-render
-    showToast('Photo attached');
-  };
-  reader.readAsDataURL(file);
-}
-
 function previewPhoto(src) {
   document.getElementById('imgPreviewSrc').src = src;
   document.getElementById('imgPreview').style.display = 'flex';
@@ -1239,13 +1216,61 @@ function hidePartyList() {
 }
 
 async function addNewParty(name) {
+  // Show mobile number modal
+  showAddPartyModal(name);
+}
+
+function showAddPartyModal(name) {
+  // Create a simple inline modal for party details
+  const existing = document.getElementById('addPartyModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'addPartyModal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:600;display:flex;align-items:flex-end;justify-content:center;';
+  modal.innerHTML = `
+    <div style="background:white;width:100%;max-width:440px;border-radius:16px 16px 0 0;padding:24px;">
+      <div style="font-size:16px;font-weight:600;margin-bottom:4px;">Add New Party</div>
+      <div style="font-size:13px;color:#888;margin-bottom:20px;">Save party details for future orders</div>
+      <div style="margin-bottom:14px;">
+        <label style="font-size:12px;font-weight:500;color:#666;display:block;margin-bottom:5px;">Party Name</label>
+        <input id="newPartyName" type="text" value="${name}" style="width:100%;padding:9px 12px;border:1px solid #ccc;border-radius:6px;font-size:14px;font-family:inherit;" />
+      </div>
+      <div style="margin-bottom:20px;">
+        <label style="font-size:12px;font-weight:500;color:#666;display:block;margin-bottom:5px;">Mobile Number (optional)</label>
+        <input id="newPartyMobile" type="tel" placeholder="e.g. 98765 43210" style="width:100%;padding:9px 12px;border:1px solid #ccc;border-radius:6px;font-size:14px;font-family:inherit;" />
+      </div>
+      <div style="display:flex;gap:8px;">
+        <button onclick="document.getElementById('addPartyModal').remove()" style="flex:1;padding:11px;border:1px solid #ccc;border-radius:6px;background:white;font-size:13px;cursor:pointer;">Cancel</button>
+        <button onclick="confirmAddParty()" style="flex:2;padding:11px;border:none;border-radius:6px;background:#1a6b3c;color:white;font-size:13px;font-weight:600;cursor:pointer;">Save Party →</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+  setTimeout(() => document.getElementById('newPartyMobile').focus(), 100);
+}
+
+async function confirmAddParty() {
+  const name = document.getElementById('newPartyName').value.trim();
+  const mobile = document.getElementById('newPartyMobile').value.trim();
+  if (!name) { showToast('Please enter a party name'); return; }
+
+  const entry = mobile ? name + ' | ' + mobile : name;
+  // Store display name separately from full entry
+  partiesData = partiesData || {};
+  partiesData[name] = {name, mobile};
+
   parties.push(name);
+  parties = [...new Set(parties)];
   localStorage.setItem('spares_parties', JSON.stringify(parties));
+  localStorage.setItem('spares_parties_data', JSON.stringify(partiesData));
+
   selectParty(name);
+  document.getElementById('addPartyModal').remove();
+
   if (!DEMO_MODE) {
-    try { await api({action:'addParty', name}); } catch(e) {}
+    try { await api({action:'addParty', name, mobile}); } catch(e) {}
   }
-  showToast(`Party "${name}" added`);
+  showToast(`"${name}" added${mobile ? ' with mobile' : ''}`);
 }
 
 // Product autocomplete
@@ -1273,7 +1298,7 @@ function addItem(product) {
     document.getElementById('productList').classList.add('hidden');
     return;
   }
-  newOrderItems.push({product, qty:1, price:'', photoData:null});
+  newOrderItems.push({product, qty:1, price:''});
   document.getElementById('productSearch').value = '';
   document.getElementById('productList').classList.add('hidden');
   renderNewItems();
@@ -1305,22 +1330,11 @@ function renderNewItems() {
         <input class="inline-input" type="number" value="${item.price}" placeholder="0" min="0"
           onchange="newOrderItems[${idx}].price=this.value" />
       </td>
-      <td style="text-align:center">
-        <button type="button" class="photo-btn ${item.photoData?'has-photo':''}" onclick="triggerNewPhotoUpload(${idx})">${item.photoData ? '✓ Photo' : '📷 Photo'}</button>
-      </td>
       <td>
         <button class="btn-icon" style="color:var(--danger)" onclick="removeNewItem(${idx})">✕</button>
       </td>
     </tr>
   `).join('');
-}
-
-function attachNewPhoto(event, idx) {
-  const file = event.target.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => { newOrderItems[idx].photoData = e.target.result; renderNewItems(); showToast('Photo attached'); };
-  reader.readAsDataURL(file);
 }
 
 function removeNewItem(idx) {
@@ -1343,15 +1357,9 @@ async function submitOrder() {
     items: newOrderItems.map(i => ({
       product: i.product, qty: parseInt(i.qty)||1,
       finalQty: parseInt(i.qty)||1, price: i.price||'',
-      photoURL:'', deleted: false
+      deleted: false
     }))
   };
-
-  // Store photos locally
-  newOrderItems.forEach(i => {
-    if (i.photoData) photosMap[id+'_'+i.product] = i.photoData;
-  });
-
   orders.push(order);
 
   if (DEMO_MODE) {
@@ -1415,45 +1423,5 @@ window.importProducts = importProducts;
 </script>
 
 
-<!-- Single hidden file input for photo uploads -->
-<input type="file" id="globalPhotoInput" accept="image/*" capture="environment" style="display:none">
-
-<script>
-// Photo upload helpers using a single shared input (works on mobile)
-let _photoTarget = null; // {type:'order'|'new', orderId, product} or {type:'new', idx}
-
-function triggerPhotoUpload(orderId, product) {
-  _photoTarget = {type:'order', orderId, product};
-  const inp = document.getElementById('globalPhotoInput');
-  inp.value = '';
-  inp.click();
-}
-
-function triggerNewPhotoUpload(idx) {
-  _photoTarget = {type:'new', idx};
-  const inp = document.getElementById('globalPhotoInput');
-  inp.value = '';
-  inp.click();
-}
-
-document.getElementById('globalPhotoInput').addEventListener('change', function(e) {
-  const file = e.target.files[0];
-  if (!file || !_photoTarget) return;
-  const reader = new FileReader();
-  reader.onload = function(ev) {
-    if (_photoTarget.type === 'order') {
-      const key = _photoTarget.orderId + '_' + _photoTarget.product;
-      photosMap[key] = ev.target.result;
-      openOrder(_photoTarget.orderId);
-      showToast('Photo attached ✓');
-    } else {
-      newOrderItems[_photoTarget.idx].photoData = ev.target.result;
-      renderNewItems();
-      showToast('Photo attached ✓');
-    }
-  };
-  reader.readAsDataURL(file);
-});
-</script>
 </body>
 </html>
