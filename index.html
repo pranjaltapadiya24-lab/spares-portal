@@ -1319,10 +1319,12 @@ function openOrder(id) {
 
   items.filter(i => !i.deleted).forEach((item, idx) => {
     const canEdit = (ROLE === 'warehouse' || ROLE === 'admin') && (order.status === 'pending' || order.status === 'ready');
-      const canPrice = (ROLE === 'owner' || ROLE === 'admin') && (order.status === 'ready' || order.status === 'priced');
+      const canEditAny = ROLE === 'admin'; // admin can edit any order at any status
+      const canPrice = (ROLE === 'owner' || ROLE === 'admin') && (order.status === 'ready' || order.status === 'priced' || order.status === 'pending');
 
     let qtyCell = '';
-    if (canEdit) {
+    const qtyEditable = canEdit || canEditAny;
+    if (qtyEditable) {
       qtyCell = `<div class="qty-edit-wrap">
         ${item.finalQty != item.qty ? `<span class="strikethrough">${item.qty}</span>` : ''}
         <input class="inline-input" type="number" value="${item.finalQty||item.qty}" min="0"
@@ -1336,7 +1338,8 @@ function openOrder(id) {
     }
 
     let priceCell = '';
-    if (canPrice) {
+    const priceEditable = canPrice || canEditAny;
+    if (priceEditable) {
       priceCell = `<input class="inline-input" type="number" value="${item.price||''}" placeholder="0" min="0"
         onchange="updateItemPrice('${id}','${item.product}',this.value)" />`;
     } else {
@@ -1346,7 +1349,7 @@ function openOrder(id) {
     body += `<tr id="row_${idx}">
       <td><div class="product-name">${item.product}</div></td>
       <td style="text-align:right">${qtyCell}</td>
-      <td style="text-align:right">${priceCell}</td>${canEdit ? `<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem('${id}','${item.product}')">✕</button></td>` : ''}
+      <td style="text-align:right">${priceCell}</td>${(canEdit || canEditAny) ? `<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem('${id}','${item.product}')">✕</button></td>` : ''}
     </tr>${item.note ? `<tr class="item-note-row"><td colspan="4" style="padding:2px 6px 10px 6px;"><span class="item-note-display">📝 ${item.note}</span></td></tr>` : ''}`;
   });
 
@@ -1367,6 +1370,8 @@ function openOrder(id) {
     } else if (order.status === 'priced') {
       body += `<button class="btn btn-secondary btn-sm" onclick="updateStatus('${id}','ready')">← Back to Ready</button>`;
       body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','dispatched')" style="margin-left:auto">Mark Dispatched 🚚</button>`;
+    } else if (order.status === 'dispatched' && ROLE === 'admin') {
+      body += `<button class="btn btn-secondary btn-sm" onclick="updateStatus('${id}','priced')">← Back to Priced</button>`;
     }
   }
 
@@ -1629,162 +1634,146 @@ function buildSlipHTML(order) {
   const hasRates = items.some(i => parseFloat(i.price) > 0);
   const total = items.reduce((s,i) => s+(parseFloat(i.price)||0)*(parseInt(i.finalQty||i.qty)||0), 0);
 
+  const TOTAL_ROWS = 15;
   const rows = items.map((item, idx) => {
     const qty  = (item.finalQty || item.qty) || '';
     const rate = parseFloat(item.price)||0;
     const amt  = (rate > 0 && qty !== '') ? (rate * qty).toFixed(2) : '';
     return `<tr>
-      <td style="text-align:center;width:22px">${idx+1}</td>
+      <td class="num" style="width:18px">${idx+1}</td>
       <td>${item.product}</td>
-      <td style="text-align:center;width:34px">${qty}</td>
-      <td style="text-align:right;width:48px">${rate > 0 ? rate : ''}</td>
-      <td style="text-align:right;width:54px">${amt}</td>
+      <td class="c" style="width:38px">${qty}</td>
+      <td class="r" style="width:52px">${rate > 0 ? rate : ''}</td>
+      <td class="r" style="width:62px">${amt}</td>
     </tr>`;
   }).join('');
 
-  return `
-    <div class="slip">
-      <div class="slip-header">
-        <div class="slip-co">CHARBHUJA TRADERS</div>
-        <div class="slip-meta">
-          <div>${dateStr}</div>
-          <div>#${String(order.id).slice(-5)}</div>
-        </div>
-      </div>
-      <div class="slip-party-row">
-        <div class="slip-party-label">Party</div>
-        <div class="slip-party">${order.party}</div>
-      </div>
-      <table>
-        <thead>
-          <tr>
-            <th>#</th>
-            <th style="text-align:left">Product</th>
-            <th style="text-align:center">Qty</th>
-            <th style="text-align:right">Rate</th>
-            <th style="text-align:right">Amt</th>
-          </tr>
-        </thead>
-        <tbody>${rows}</tbody>
-        ${hasRates ? `<tfoot><tr>
-          <td colspan="4" style="text-align:right">Total</td>
-          <td>&#8377;${total.toFixed(2)}</td>
-        </tr></tfoot>` : ''}
-      </table>
-      ${order.note ? `<div class="slip-note">Note: ${order.note}</div>` : ''}
-      <div class="slip-footer">
-        <span>Prepared: ___________</span>
-        <span>Received: ___________</span>
-      </div>
-    </div>`;
+  let emptyRows = '';
+  for (let i = items.length; i < TOTAL_ROWS; i++) {
+    emptyRows += `<tr>
+      <td class="num">${i+1}</td>
+      <td></td><td></td><td></td><td></td>
+    </tr>`;
+  }
+
+  return `<div class="slip">
+    <div class="slip-header">
+      <div class="slip-party">${order.party}</div>
+      <div class="slip-meta"><div>${dateStr}</div><div>#${String(order.id).slice(-5)}</div></div>
+    </div>
+    ${order.note ? `<div class="slip-note">Note: ${order.note}</div>` : ''}
+    <table>
+      <thead><tr>
+        <th style="width:18px">#</th>
+        <th>Product Name</th>
+        <th class="c" style="width:38px">Qty</th>
+        <th class="r" style="width:52px">Rate</th>
+        <th class="r" style="width:62px">Total</th>
+      </tr></thead>
+      <tbody>${rows}${emptyRows}</tbody>
+      ${hasRates ? `<tfoot><tr>
+        <td colspan="4" style="text-align:right;padding-right:6px">Total Amount</td>
+        <td>&#8377;${total.toFixed(2)}</td>
+      </tr></tfoot>` : ''}
+    </table>
+    <div class="slip-footer">
+      <span>Charbhuja Traders</span>
+      <span>Prepared by: _______________</span>
+      <span>Received by: _______________</span>
+    </div>
+  </div>`;
 }
 
 const SLIP_CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; background: #fff; }
+  body { font-family: Arial, sans-serif; background: #fff; font-size: 13px; }
+
+  @media print {
+    @page { size: A5 landscape; margin: 5mm 7mm; }
+    .no-print { display: none !important; }
+    body { margin: 0; }
+    .page { width: 100%; height: 100%; }
+    table { height: calc(100% - 28mm); }
+    tbody { height: 100%; }
+    tbody tr { height: auto; }
+  }
 
   .page {
-    width: 148mm;
-    min-height: 210mm;
-    padding: 10mm 12mm;
+    width: 205mm;
+    height: 143mm;
+    padding: 5mm 7mm;
     margin: 0 auto;
     display: flex;
     flex-direction: column;
   }
 
-  @media print {
-    @page {
-      size: A5 portrait;
-      margin: 0;
-    }
-    .no-print { display: none !important; }
-    body { margin: 0; }
-    .page {
-      width: 148mm;
-      min-height: 210mm;
-      padding: 8mm 10mm;
-      page-break-after: always;
-    }
-  }
-
-  .slip { width: 100%; }
+  .slip { display: flex; flex-direction: column; height: 100%; }
 
   .slip-header {
-    border-bottom: 2px solid #222;
-    padding-bottom: 6px;
-    margin-bottom: 8px;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    border-bottom: 1.5px solid #000;
+    padding-bottom: 3px;
+    margin-bottom: 3px;
+    flex-shrink: 0;
   }
-  .slip-co {
-    font-size: 18px;
-    font-weight: 800;
-    letter-spacing: 0.5px;
-    color: #1a1916;
-  }
-  .slip-meta {
-    font-size: 13px;
-    color: #555;
-    text-align: right;
-    line-height: 1.5;
-  }
+  .slip-party { font-size: 18px; font-weight: 800; }
+  .slip-meta { font-size: 12px; color: #444; text-align: right; line-height: 1.5; }
 
-  .slip-party-row {
-    margin-bottom: 10px;
-    padding-bottom: 8px;
-    border-bottom: 1px solid #ddd;
+  .slip-note {
+    font-size: 12px; color: #555; font-style: italic;
+    margin-bottom: 3px; flex-shrink: 0;
   }
-  .slip-party-label { font-size: 12px; color: #888; margin-bottom: 2px; }
-  .slip-party { font-size: 18px; font-weight: 700; color: #000; }
 
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-bottom: 8px;
+    flex: 1;
+    table-layout: fixed;
   }
   thead th {
-    background: #f0f0f0;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 3px 4px;
+    font-size: 12px;
     font-weight: 700;
-    font-size: 13px;
-    padding: 7px 6px;
-    border-top: 1px solid #bbb;
-    border-bottom: 1px solid #bbb;
     text-align: left;
+    background: #fff;
   }
-  thead th:last-child { text-align: right; }
-  tbody td {
-    padding: 7px 6px;
-    font-size: 14px;
-    border-bottom: 1px solid #eee;
-    vertical-align: top;
-  }
-  tbody td:last-child { text-align: right; font-weight: 500; }
-  tfoot td {
-    padding: 8px 6px;
-    font-size: 15px;
-    font-weight: 700;
-    border-top: 2px solid #bbb;
-    background: #f9f9f9;
-  }
-  tfoot td:last-child { text-align: right; }
+  thead th.r { text-align: right; }
+  thead th.c { text-align: center; }
 
-  .slip-note {
+  tbody { }
+  tbody tr { border-bottom: 1px solid #ccc; }
+  tbody tr td {
+    padding: 0px 4px;
     font-size: 13px;
-    color: #555;
-    font-style: italic;
-    border-top: 1px dashed #ccc;
-    padding-top: 6px;
-    margin-top: 6px;
+    vertical-align: middle;
+    height: 9mm;
   }
+  tbody td.r { text-align: right; }
+  tbody td.c { text-align: center; }
+  tbody td.num { color: #888; font-size: 11px; }
+
+  tfoot tr { border-top: 2px solid #000; }
+  tfoot td {
+    padding: 3px 4px;
+    font-size: 14px;
+    font-weight: 800;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
   .slip-footer {
-    margin-top: auto;
-    padding-top: 12px;
-    border-top: 1px solid #eee;
+    margin-top: 4px;
     display: flex;
     justify-content: space-between;
-    font-size: 12px;
-    color: #999;
+    font-size: 11px;
+    color: #888;
+    border-top: 1px solid #ddd;
+    padding-top: 3px;
+    flex-shrink: 0;
   }
 `;
 
