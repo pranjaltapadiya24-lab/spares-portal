@@ -1355,35 +1355,57 @@ function openOrder(id) {
 
   body += '</tbody></table>';
 
+  // Add product to existing order (for warehouse/admin on pending/ready, owner/admin on any early status)
+  const canAddProduct = (ROLE === 'warehouse' || ROLE === 'admin') && (order.status === 'pending' || order.status === 'ready');
+  if (canAddProduct || canEditAny) {
+    body += `<div style="padding:10px 16px;border-top:1px solid var(--border);background:var(--surface2);">
+      <div style="font-size:12px;font-weight:600;color:var(--text2);margin-bottom:6px;">ADD PRODUCT</div>
+      <div class="autocomplete-wrap">
+        <input type="text" id="modalProductSearch" placeholder="Search product to add..."
+          style="width:100%;padding:9px 12px;border:1px solid var(--border2);border-radius:6px;font-size:14px;font-family:inherit;"
+          autocomplete="off"
+          oninput="searchModalProducts(this.value,'${id}')"
+          onblur="setTimeout(()=>{ const l=document.getElementById('modalProdList'); if(l)l.classList.add('hidden'); },200)" />
+        <div class="autocomplete-list hidden" id="modalProdList"></div>
+      </div>
+    </div>`;
+  }
+
   // Action buttons
-  body += '<div class="action-bar">';
+  body += '<div class="action-bar" style="flex-wrap:wrap;gap:6px;">';
+
+  // Print button available to EVERYONE on ANY order
+  body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print</button>`;
 
   if (ROLE === 'warehouse' || ROLE === 'admin') {
     if (order.status === 'pending') {
-      body += `<button class="btn btn-primary btn-sm btn-full" onclick="updateStatus('${id}','ready')">Mark Ready ✓</button>`;
+      body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','ready')" style="margin-left:auto">Mark Ready ✓</button>`;
     }
   }
 
   if (ROLE === 'owner' || ROLE === 'admin') {
-    if (order.status === 'ready') {
-      body += `<button class="btn btn-primary btn-sm btn-full" onclick="updateStatus('${id}','priced')">Mark Priced ✓</button>`;
+    if (order.status === 'pending' || order.status === 'ready') {
+      body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','priced')" style="margin-left:auto">Mark Priced ✓</button>`;
     } else if (order.status === 'priced') {
-      body += `<button class="btn btn-secondary btn-sm" onclick="updateStatus('${id}','ready')">← Back to Ready</button>`;
+      body += `<button class="btn btn-secondary btn-sm" onclick="updateStatus('${id}','pending')">← Back to Pending</button>`;
       body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','dispatched')" style="margin-left:auto">Mark Dispatched 🚚</button>`;
-    } else if (order.status === 'dispatched' && ROLE === 'admin') {
+    }
+  }
+
+  if (ROLE === 'admin') {
+    if (order.status === 'dispatched') {
       body += `<button class="btn btn-secondary btn-sm" onclick="updateStatus('${id}','priced')">← Back to Priced</button>`;
+    }
+    if (order.status === 'billed') {
+      body += `<button class="btn btn-secondary btn-sm" onclick="updateStatus('${id}','dispatched')">← Back to Dispatched</button>`;
     }
   }
 
   if (ROLE === 'accountant' || ROLE === 'admin') {
     if (order.status === 'priced' || order.status === 'dispatched') {
-      body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print</button>`;
-      body += `<button class="btn btn-sm btn-secondary" onclick="exportToExcel('${id}')" style="background:#1d6f42;color:#fff;border-color:#1d6f42">📥 Excel</button>`;
-      if (order.status === 'priced') body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','dispatched')" style="margin-left:auto">Mark Dispatched 🚚</button>`;
       if (order.status === 'dispatched') body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','billed')" style="margin-left:auto">Mark Billed ✓</button>`;
     } else if (order.status === 'billed') {
-      body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print Bill</button>`;
-      body += `<button class="btn btn-sm btn-secondary" onclick="exportToExcel('${id}')" style="background:#1d6f42;color:#fff;border-color:#1d6f42">📥 Excel</button>`;
+      body += `<span style="font-size:12px;color:var(--accent);margin-left:auto">✓ Billed</span>`;
     }
   }
 
@@ -1429,6 +1451,42 @@ function deleteItem(orderId, product) {
   gsUpdateOrder(orderId, {items: order.items}).catch(e => showToast('Sheet sync error'));
   openOrder(orderId);
   showToast('Item removed');
+}
+
+function searchModalProducts(q, orderId) {
+  const list = document.getElementById('modalProdList');
+  if (!list) return;
+  if (!q || q.length < 1) { list.classList.add('hidden'); return; }
+  const order = orders.find(o => String(o.id) === String(orderId));
+  const existing = (order ? order.items.map(i => i.product) : []);
+  const matches = products.filter(p => p.toLowerCase().includes(q.toLowerCase()) && !existing.includes(p));
+  let html2 = matches.slice(0,10).map(p =>
+    `<div class="autocomplete-item" onmousedown="addProductToOrder('${orderId}','${p.replace(/'/g,"\'")}')">${p}</div>`
+  ).join('');
+  if (!matches.find(p => p.toLowerCase() === q.toLowerCase())) {
+    html2 += `<div class="autocomplete-add" onmousedown="addProductToOrder('${orderId}','${q.replace(/'/g,"\'")}')">+ Add "${q}"</div>`;
+  }
+  list.innerHTML = html2;
+  list.classList.remove('hidden');
+}
+
+async function addProductToOrder(orderId, product) {
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) return;
+  if (order.items.find(i => i.product === product && !i.deleted)) {
+    showToast('Already in order'); return;
+  }
+  const existing = order.items.find(i => i.product === product && i.deleted);
+  if (existing) {
+    existing.deleted = false;
+    existing.finalQty = 1;
+  } else {
+    order.items.push({product, qty:1, finalQty:1, price:'', deleted:false});
+  }
+  if (DEMO_MODE) saveDemo();
+  else { try { await api('updateOrder', {id:orderId, items:order.items}); } catch(e) {} }
+  openOrder(orderId);
+  showToast('"' + product + '" added ✓');
 }
 
 async function deleteOrder(orderId) {
