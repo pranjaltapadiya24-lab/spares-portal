@@ -64,6 +64,115 @@
     color: var(--text);
   }
   .header-brand span { color: var(--accent); }
+  /* ── Item notes ── */
+  .item-note-input {
+    width: 100%;
+    border: 1px dashed var(--border2);
+    border-radius: var(--radius-sm);
+    padding: 5px 10px;
+    font-size: 12px;
+    font-family: inherit;
+    color: var(--text2);
+    background: var(--surface2);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .item-note-input:focus { border-color: var(--accent); background: var(--surface); color: var(--text); }
+  .item-note-input::placeholder { color: var(--text3); }
+  .item-note-display { font-size: 12px; color: var(--text2); font-style: italic; }
+  .item-note-row td { border-bottom: none !important; padding-top: 0 !important; }
+
+  /* ── Batch View ── */
+  .batch-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+  }
+  .batch-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .batch-card-header {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: var(--surface2);
+  }
+  .batch-party {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .batch-meta {
+    font-size: 11px;
+    color: var(--text3);
+    white-space: nowrap;
+  }
+  .batch-items {
+    padding: 8px 0;
+    flex: 1;
+  }
+  .batch-item-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 5px 14px;
+    border-bottom: 1px solid var(--border);
+    gap: 8px;
+  }
+  .batch-item-row:last-child { border-bottom: none; }
+  .batch-item-name {
+    font-size: 12px;
+    color: var(--text);
+    flex: 1;
+    line-height: 1.4;
+  }
+  .batch-item-qty {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    white-space: nowrap;
+    font-family: 'DM Mono', monospace;
+  }
+  .batch-item-note {
+    font-size: 11px;
+    color: var(--text3);
+    font-style: italic;
+    padding: 0 14px 5px;
+  }
+  .batch-card-footer {
+    padding: 8px 14px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    background: var(--surface2);
+  }
+  .batch-order-note {
+    font-size: 11px;
+    color: var(--text2);
+    font-style: italic;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  @media (max-width: 500px) {
+    .batch-grid { grid-template-columns: 1fr; }
+  }
+
   .role-badge {
     font-size: 11px;
     font-weight: 500;
@@ -423,6 +532,7 @@
   .role-grid { grid-template-columns: 1fr 1fr; }
   }
 </style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 </head>
 <body>
 
@@ -525,6 +635,18 @@
     var products=[];for(var i=0;i<d.length;i++)if(d[i][0])products.push(d[i][0]);
     return ContentService.createTextOutput(JSON.stringify(products)).setMimeType(ContentService.MimeType.JSON);
   }
+  if(action==='addProduct'){
+    var prs=ss.getSheetByName('Products')||ss.insertSheet('Products');
+    prs.appendRow([data.name]);
+    return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+  }
+  if(action==='deleteOrder'){
+    var os=ss.getSheetByName('Orders');
+    var is=ss.getSheetByName('Items');
+    if(os){var d=os.getDataRange().getValues();for(var i=1;i&lt;d.length;i++){if(d[i][0]==data.id){os.deleteRow(i+1);break;}}}
+    if(is){var d2=is.getDataRange().getValues();for(var i=d2.length-1;i&gt;=1;i--){if(d2[i][0]==data.id){is.deleteRow(i+1);}}}
+    return ContentService.createTextOutput(JSON.stringify({ok:true})).setMimeType(ContentService.MimeType.JSON);
+  }
   return ContentService.createTextOutput(JSON.stringify({ok:false})).setMimeType(ContentService.MimeType.JSON);
 }
 function doGet(e){return doPost(e);}</pre>
@@ -590,16 +712,20 @@ function doGet(e){return doPost(e);}</pre>
 
   <div class="header">
     <div class="header-brand">Spares <span>Portal</span></div>
-    <div class="role-badge" onclick="showRolePicker()" title="Switch role">
-      <span id="roleIcon"></span>
-      <span id="roleName"></span>
-      <span style="font-size:10px;opacity:.5">▼</span>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <button onclick="loadData()" title="Sync now" style="background:none;border:none;cursor:pointer;font-size:16px;padding:4px;color:var(--text2);line-height:1;" id="syncBtn">⟳</button>
+      <div class="role-badge" onclick="showRolePicker()" title="Switch role">
+        <span id="roleIcon"></span>
+        <span id="roleName"></span>
+        <span style="font-size:10px;opacity:.5">▼</span>
+      </div>
     </div>
   </div>
 
   <div class="nav">
     <div class="nav-tab active" onclick="showTab('orders')" id="tab-orders">Orders <span class="badge" id="pendingBadge" style="display:none">0</span></div>
     <div class="nav-tab" onclick="showTab('new')" id="tab-new" style="display:none">+ New Order</div>
+    <div class="nav-tab" onclick="showTab('batch')" id="tab-batch" style="display:none">📋 Batch View</div>
     <div class="nav-tab" onclick="showTab('products')" id="tab-products" style="display:none">Products</div>
   </div>
 
@@ -615,6 +741,18 @@ function doGet(e){return doPost(e);}</pre>
         <div class="filter-pill" onclick="filterOrders('dispatched',this)">Dispatched</div>
       </div>
 
+      <div id="exportAllBar" style="display:none;padding:8px 0 4px 0;">
+        <button onclick="exportAllPriced()" style="width:100%;padding:10px;background:#1d6f42;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:0.3px;">
+          📥 Export All Priced Orders to Excel
+        </button>
+      </div>
+
+      <div id="bulkPrintBar" style="display:none;padding:8px 0 4px 0;">
+        <button onclick="bulkPrintOrders()" style="width:100%;padding:10px;background:#1a6b3c;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;letter-spacing:0.3px;">
+          🖨️ Print All Visible Orders (Quarter-Page Slips)
+        </button>
+      </div>
+
       <div class="card">
         <div style="padding:10px 12px;border-bottom:1px solid var(--border)">
           <div class="search-wrap">
@@ -626,6 +764,20 @@ function doGet(e){return doPost(e);}</pre>
       </div>
 
       <button class="btn btn-primary btn-full mt-12" id="fabNewOrder" onclick="showTab('new')" style="display:none">+ New Order</button>
+    </div>
+
+    <!-- BATCH VIEW TAB -->
+    <div id="view-batch" class="hidden">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;gap:8px;flex-wrap:wrap;">
+        <div style="font-size:13px;font-weight:600;color:var(--text)">Pending Orders — Batch View</div>
+        <div style="display:flex;gap:8px;">
+          <div class="filter-pill active" id="bpill-pending" onclick="setBatchFilter('pending',this)">Pending</div>
+          <div class="filter-pill" id="bpill-ready" onclick="setBatchFilter('ready',this)">Ready</div>
+          <div class="filter-pill" id="bpill-all" onclick="setBatchFilter('all',this)">All Active</div>
+        </div>
+      </div>
+      <div id="batchGrid"></div>
+      <div id="batchEmpty" class="hidden" style="text-align:center;padding:40px 16px;color:var(--text3);font-size:13px;">No orders to show</div>
     </div>
 
     <!-- NEW ORDER TAB -->
@@ -879,6 +1031,7 @@ function applyRole() {
 
   // Show/hide tabs
   document.getElementById('tab-new').style.display = (ROLE === 'sales' || ROLE === 'admin') ? '' : 'none';
+  document.getElementById('tab-batch').style.display = (ROLE === 'warehouse' || ROLE === 'admin') ? '' : 'none';
   document.getElementById('tab-products').style.display = (ROLE === 'admin') ? '' : 'none';
   document.getElementById('fabNewOrder').style.display = (ROLE === 'sales' || ROLE === 'admin') ? '' : 'none';
 }
@@ -889,52 +1042,189 @@ function showRolePicker() {
 
 // ─── NAVIGATION ──────────────────────────────────────────────────────────────
 function showTab(tab) {
-  ['orders','new','products'].forEach(t => {
+  ['orders','new','products','batch'].forEach(t => {
     document.getElementById('view-'+t).classList.toggle('hidden', t !== tab);
     document.getElementById('tab-'+t)?.classList.toggle('active', t === tab);
   });
   if (tab === 'new') resetNewOrderForm();
   if (tab === 'products') renderProductList();
+  if (tab === 'batch') renderBatchView();
+}
+
+// ─── BATCH VIEW ───────────────────────────────────────────────────────────────
+let batchFilter = 'pending';
+
+function setBatchFilter(filter, el) {
+  batchFilter = filter;
+  document.querySelectorAll('[id^="bpill-"]').forEach(p => p.classList.remove('active'));
+  el.classList.add('active');
+  renderBatchView();
+}
+
+function renderBatchView() {
+  const grid = document.getElementById('batchGrid');
+  const empty = document.getElementById('batchEmpty');
+
+  let filtered = orders.filter(o => {
+    if (batchFilter === 'all') return ['pending','ready','priced'].includes(o.status);
+    return o.status === batchFilter;
+  });
+
+  // Sort oldest first so warehouse picks in order received
+  filtered.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+  if (filtered.length === 0) {
+    grid.innerHTML = '';
+    grid.className = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+
+  empty.classList.add('hidden');
+  grid.className = 'batch-grid';
+
+  grid.innerHTML = filtered.map(order => {
+    const items = (order.items || []).filter(i => !i.deleted);
+    const timeStr = order.date ? new Date(order.date).toLocaleTimeString('en-IN', {hour:'2-digit', minute:'2-digit'}) : '';
+    const dateStr = order.date ? new Date(order.date).toLocaleDateString('en-IN', {day:'numeric', month:'short'}) : '';
+
+    const itemRows = items.map(item => `
+      <div class="batch-item-row">
+        <span class="batch-item-name">${item.product}</span>
+        <span class="batch-item-qty">×${item.finalQty || item.qty}</span>
+      </div>
+      ${item.note ? `<div class="batch-item-note">↳ ${item.note}</div>` : ''}
+    `).join('');
+
+    return `
+      <div class="batch-card" onclick="openOrder('${order.id}')">
+        <div class="batch-card-header">
+          <div class="batch-party" title="${order.party}">${order.party}</div>
+          <div style="display:flex;align-items:center;gap:6px;flex-shrink:0;">
+            <span class="status status-${order.status}">${order.status}</span>
+          </div>
+        </div>
+        <div class="batch-items">${itemRows}</div>
+        <div class="batch-card-footer">
+          ${order.note ? `<div class="batch-order-note">📝 ${order.note}</div>` : '<div></div>'}
+          <div class="batch-meta">${dateStr} ${timeStr}</div>
+        </div>
+      </div>
+    `;
+  }).join('');
 }
 
 // ─── DATA LOADING ─────────────────────────────────────────────────────────────
 async function loadData() {
-  if (DEMO_MODE) {
-    renderOrders();
-    return;
-  }
+  showToast('Loading orders…');
   try {
-    // Load orders
-    const res = await api({action:'getOrders'});
-    orders = res;
-    // Load parties
-    const pr = await api({action:'getParties'});
-    parties = pr;
-    // Load products
-    const prd = await api({action:'getProducts'});
-    if (prd.length > 0) {
-      products = prd;
-      localStorage.setItem('spares_products', JSON.stringify(products));
-    }
+    orders = await gsGetOrders();
+    const pr = await gsGetParties();
+    if (pr.length > 0) parties = [...new Set([...PARTIES, ...pr])];
+    const prd = await gsGetProducts();
+    if (prd && prd.length > 0) { prd.forEach(p => { if (!products.includes(p)) products.push(p); }); }
     renderOrders();
+    showToast('Orders loaded ✓');
+    startAutoSync();
   } catch(e) {
-    showToast('Could not connect to sheet. Using cached data.');
+    showToast('Sheet error: ' + e.message + '. Using cached data.');
+    orders = JSON.parse(localStorage.getItem('spares_orders_demo') || '[]');
     renderOrders();
   }
 }
 
-async function api(data) {
-  const url = SCRIPT_URL + '?t=' + Date.now();
-  const res = await fetch(url, {
+// ─── AUTO SYNC (real-time across devices) ─────────────────────────────────────
+let _syncTimer = null;
+let _lastSyncCount = 0;
+
+function startAutoSync() {
+  if (_syncTimer) return; // already running
+  _syncTimer = setInterval(silentSync, 15000); // every 15 seconds
+}
+
+async function silentSync() {
+  try {
+    const fresh = await gsGetOrders();
+    // Only re-render if something actually changed
+    if (JSON.stringify(fresh) !== JSON.stringify(orders)) {
+      orders = fresh;
+      renderOrders();
+      // Show a subtle indicator — only if modal is not open
+      if (!document.getElementById('orderModal')?.classList.contains('open')) {
+        showSyncDot();
+      }
+    }
+  } catch(e) {
+    // Silent fail — don't toast on background errors
+  }
+}
+
+function showSyncDot() {
+  let dot = document.getElementById('syncDot');
+  if (!dot) {
+    dot = document.createElement('div');
+    dot.id = 'syncDot';
+    dot.style.cssText = 'position:fixed;bottom:70px;right:16px;background:var(--accent);color:#fff;font-size:11px;padding:4px 10px;border-radius:20px;z-index:999;opacity:1;transition:opacity 1.5s';
+    dot.textContent = '🔄 Synced';
+    document.body.appendChild(dot);
+  }
+  dot.style.opacity = '1';
+  setTimeout(() => { dot.style.opacity = '0'; }, 2000);
+}
+
+// ─── GOOGLE SHEETS API ────────────────────────────────────────────────────────
+// ─── APPS SCRIPT BACKEND ─────────────────────────────────────────────────────
+const AS_URL = 'https://script.google.com/macros/s/AKfycbzxc7kJE5tEAu3zX3p0nqwhIQUkTZh0EDWx8WAQ7Hn5W0xRLH6IHywEuUmsZWMT895KBg/exec';
+
+async function api(action, payload={}) {
+  const body = JSON.stringify({action, ...payload});
+  const res = await fetch(AS_URL, {
     method: 'POST',
-    body: JSON.stringify(data),
+    body,
     headers: {'Content-Type':'text/plain'}
   });
-  return res.json();
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  const data = await res.json();
+  if (data && data.error) throw new Error(data.error);
+  return data;
 }
+
+async function gsGetOrders() {
+  const data = await api('getOrders');
+  return Array.isArray(data) ? data : [];
+}
+
+async function gsSaveOrder(order) {
+  await api('saveOrder', order);
+}
+
+async function gsUpdateOrder(id, fields) {
+  await api('updateOrder', {id, ...fields});
+}
+
+async function gsGetParties() {
+  const data = await api('getParties');
+  return Array.isArray(data) ? data : [];
+}
+
+async function gsEnsureParty(name) {
+  if (!name) return;
+  await api('addParty', {name});
+}
+
+async function gsGetProducts() {
+  const data = await api('getProducts');
+  return Array.isArray(data) ? data : [];
+}
+
+function safeParseJSON(str, fallback) { try { return JSON.parse(str); } catch(e) { return fallback; } }
 
 // ─── ORDERS RENDER ────────────────────────────────────────────────────────────
 function renderOrders() {
+  // Also refresh batch view if it's open
+  if (document.getElementById('view-batch') && !document.getElementById('view-batch').classList.contains('hidden')) {
+    renderBatchView();
+  }
   let filtered = [...orders];
   if (currentFilter !== 'all') filtered = filtered.filter(o => o.status === currentFilter);
   if (currentSearch) filtered = filtered.filter(o => o.party.toLowerCase().includes(currentSearch.toLowerCase()));
@@ -987,6 +1277,10 @@ function filterOrders(status, el) {
   currentFilter = status;
   document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
+  const exportBar = document.getElementById('exportAllBar');
+  if (exportBar) exportBar.style.display = (status === 'priced' && (ROLE === 'accountant' || ROLE === 'admin')) ? 'block' : 'none';
+  const bulkBar = document.getElementById('bulkPrintBar');
+  if (bulkBar) bulkBar.style.display = (['pending','ready','priced','all'].includes(status) && (ROLE === 'accountant' || ROLE === 'admin')) ? 'block' : 'none';
   renderOrders();
 }
 
@@ -1050,7 +1344,7 @@ function openOrder(id) {
       <td><div class="product-name">${item.product}</div></td>
       <td style="text-align:right">${qtyCell}</td>
       <td style="text-align:right">${priceCell}</td>${canEdit ? `<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem('${id}','${item.product}')">✕</button></td>` : ''}
-    </tr>`;
+    </tr>${item.note ? `<tr class="item-note-row"><td colspan="4" style="padding:2px 6px 10px 6px;"><span class="item-note-display">📝 ${item.note}</span></td></tr>` : ''}`;
   });
 
   body += '</tbody></table>';
@@ -1076,10 +1370,12 @@ function openOrder(id) {
   if (ROLE === 'accountant' || ROLE === 'admin') {
     if (order.status === 'priced' || order.status === 'dispatched') {
       body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print</button>`;
+      body += `<button class="btn btn-sm btn-secondary" onclick="exportToExcel('${id}')" style="background:#1d6f42;color:#fff;border-color:#1d6f42">📥 Excel</button>`;
       if (order.status === 'priced') body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','dispatched')" style="margin-left:auto">Mark Dispatched 🚚</button>`;
       if (order.status === 'dispatched') body += `<button class="btn btn-primary btn-sm" onclick="updateStatus('${id}','billed')" style="margin-left:auto">Mark Billed ✓</button>`;
     } else if (order.status === 'billed') {
       body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print Bill</button>`;
+      body += `<button class="btn btn-sm btn-secondary" onclick="exportToExcel('${id}')" style="background:#1d6f42;color:#fff;border-color:#1d6f42">📥 Excel</button>`;
     }
   }
 
@@ -1103,8 +1399,8 @@ function updateItemQty(orderId, product, val) {
   if (!order) return;
   const item = order.items.find(i => i.product === product);
   if (item) item.finalQty = parseInt(val) || 0;
-  if (DEMO_MODE) saveDemo();
-  else api({action:'updateOrder', id:orderId, items: order.items});
+  saveDemo();
+  gsUpdateOrder(orderId, {items: order.items}).catch(e => showToast('Sheet sync error'));
 }
 
 function updateItemPrice(orderId, product, val) {
@@ -1112,8 +1408,8 @@ function updateItemPrice(orderId, product, val) {
   if (!order) return;
   const item = order.items.find(i => i.product === product);
   if (item) item.price = val;
-  if (DEMO_MODE) saveDemo();
-  else api({action:'updateOrder', id:orderId, items: order.items});
+  saveDemo();
+  gsUpdateOrder(orderId, {items: order.items}).catch(e => showToast('Sheet sync error'));
 }
 
 function deleteItem(orderId, product) {
@@ -1121,16 +1417,17 @@ function deleteItem(orderId, product) {
   if (!order) return;
   const item = order.items.find(i => i.product === product);
   if (item) item.deleted = true;
-  if (DEMO_MODE) saveDemo();
-  else api({action:'updateOrder', id:orderId, items: order.items});
+  saveDemo();
+  gsUpdateOrder(orderId, {items: order.items}).catch(e => showToast('Sheet sync error'));
   openOrder(orderId);
   showToast('Item removed');
 }
 
-function deleteOrder(orderId) {
+async function deleteOrder(orderId) {
   if (!confirm('Delete this order?')) return;
   orders = orders.filter(o => String(o.id) !== String(orderId));
   if (DEMO_MODE) saveDemo();
+  else { try { await api('deleteOrder', {id: orderId}); } catch(e) {} }
   closeModal();
   renderOrders();
   showToast('Order deleted');
@@ -1140,8 +1437,8 @@ async function updateStatus(orderId, status) {
   const order = orders.find(o => String(o.id) === String(orderId));
   if (!order) return;
   order.status = status;
-  if (DEMO_MODE) saveDemo();
-  else await api({action:'updateOrder', id:orderId, status:status});
+  saveDemo();
+  try { await gsUpdateOrder(orderId, {status}); } catch(e) { showToast('Sheet sync error'); }
   closeModal();
   renderOrders();
   showToast('Status updated: ' + status);
@@ -1152,30 +1449,309 @@ function previewPhoto(src) {
   document.getElementById('imgPreview').style.display = 'flex';
 }
 
+function exportToExcel(orderId) {
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) return;
+
+  const items = (order.items || []).filter(i => !i.deleted);
+  const dateStr = order.date ? new Date(order.date).toLocaleDateString('en-IN', {day:'2-digit',month:'2-digit',year:'numeric'}) : new Date().toLocaleDateString('en-IN');
+  const invoiceNo = String(order.id).slice(-4); // last 4 digits as invoice ref
+
+  const WB = XLSX.utils.book_new();
+  const ws = {};
+  const merges = [];
+
+  // Helper to set a cell
+  function C(ref, value, style) {
+    ws[ref] = { v: value, t: typeof value === 'number' ? 'n' : 's', s: style || {} };
+  }
+
+  // ── ROW 1: Company Name ──────────────────────────────────────────────────
+  C('A1', 'CHARBHUJA TRADERS');
+  merges.push({ s:{r:0,c:0}, e:{r:0,c:4} });
+
+  // ── ROW 2: Debit Memo / Estimate / Original ───────────────────────────────
+  C('A2', 'Debit Memo');
+  C('B2', 'Estimate');
+  merges.push({ s:{r:1,c:1}, e:{r:1,c:3} });
+  C('E2', 'Original');
+
+  // ── ROW 3: Party + Invoice No ─────────────────────────────────────────────
+  C('A3', `M/s. :   ${order.party}`);
+  merges.push({ s:{r:2,c:0}, e:{r:2,c:2} });
+  C('D3', `Invoice No.  :  ${invoiceNo}`);
+  merges.push({ s:{r:2,c:3}, e:{r:2,c:4} });
+
+  // ── ROW 4: City + Date ────────────────────────────────────────────────────
+  C('A4', '');
+  merges.push({ s:{r:3,c:0}, e:{r:3,c:2} });
+  C('D4', `Date              :  ${dateStr}`);
+  merges.push({ s:{r:3,c:3}, e:{r:3,c:4} });
+
+  // ── ROW 5: Column headers ─────────────────────────────────────────────────
+  C('A5', 'SrNo');
+  C('B5', 'Product Name');
+  C('C5', 'Qty');
+  C('D5', 'Rate');
+  C('E5', 'Amount');
+
+  // ── ROW 6+: Items ─────────────────────────────────────────────────────────
+  let row = 6;
+  items.forEach((item, idx) => {
+    const qty  = parseFloat(item.finalQty || item.qty) || 0;
+    const rate = parseFloat(item.price) || 0;
+    ws[`A${row}`] = { v: idx+1,         t:'n' };
+    ws[`B${row}`] = { v: item.product,  t:'s' };
+    ws[`C${row}`] = { v: qty,           t:'n' };
+    ws[`D${row}`] = { v: rate,          t:'n' };
+    ws[`E${row}`] = { f: `C${row}*D${row}`, t:'n' };
+    row++;
+  });
+
+  // ── Empty buffer rows ─────────────────────────────────────────────────────
+  const emptyEnd = row + 6;
+  for (let r = row; r <= emptyEnd; r++) {
+    ['A','B','C','D','E'].forEach(col => {
+      ws[`${col}${r}`] = { v:'', t:'s' };
+    });
+    row++;
+  }
+
+  // ── Grand Total row ───────────────────────────────────────────────────────
+  const totalRow = row;
+  C(`A${totalRow}`, 'Note :');
+  merges.push({ s:{r:totalRow-1,c:0}, e:{r:totalRow-1,c:2} });
+  C(`D${totalRow}`, 'Grand Total');
+  ws[`E${totalRow}`] = { f: `SUM(E6:E${totalRow-1})`, t:'n' };
+
+  // ── Sheet range + merges ──────────────────────────────────────────────────
+  ws['!ref'] = `A1:E${totalRow}`;
+  ws['!merges'] = merges;
+
+  // ── Column widths ─────────────────────────────────────────────────────────
+  ws['!cols'] = [
+    { wch: 7 },   // A SrNo
+    { wch: 50 },  // B Product
+    { wch: 10 },  // C Qty
+    { wch: 10 },  // D Rate
+    { wch: 12 },  // E Amount
+  ];
+
+  XLSX.utils.book_append_sheet(WB, ws, 'Sales Invoice');
+
+  // ── Download ──────────────────────────────────────────────────────────────
+  const filename = `Charbhuja_${order.party.replace(/[^a-zA-Z0-9]/g,'_').slice(0,20)}_${dateStr.replace(/\//g,'-')}.xlsx`;
+  XLSX.writeFile(WB, filename);
+  showToast('Excel downloaded ✓');
+}
+
+function exportAllPriced() {
+  const pricedOrders = orders.filter(o => o.status === 'priced');
+  if (pricedOrders.length === 0) { showToast('No priced orders to export'); return; }
+
+  const WB = XLSX.utils.book_new();
+
+  pricedOrders.forEach((order, orderIdx) => {
+    const items = (order.items || []).filter(i => !i.deleted);
+    const dateStr = order.date ? new Date(order.date).toLocaleDateString('en-IN', {day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+    const invoiceNo = String(order.id).slice(-4);
+
+    const ws = {};
+    const merges = [];
+
+    function C(ref, value) { ws[ref] = { v: value, t: typeof value === 'number' ? 'n' : 's' }; }
+
+    // Header
+    C('A1', 'CHARBHUJA TRADERS');
+    merges.push({ s:{r:0,c:0}, e:{r:0,c:4} });
+    C('A2', 'Debit Memo');
+    C('B2', 'Estimate');
+    merges.push({ s:{r:1,c:1}, e:{r:1,c:3} });
+    C('E2', 'Original');
+    C('A3', `M/s. :   ${order.party}`);
+    merges.push({ s:{r:2,c:0}, e:{r:2,c:2} });
+    C('D3', `Invoice No.  :  ${invoiceNo}`);
+    merges.push({ s:{r:2,c:3}, e:{r:2,c:4} });
+    C('A4', order.note || '');
+    merges.push({ s:{r:3,c:0}, e:{r:3,c:2} });
+    C('D4', `Date              :  ${dateStr}`);
+    merges.push({ s:{r:3,c:3}, e:{r:3,c:4} });
+
+    // Column headers
+    C('A5', 'SrNo'); C('B5', 'Product Name'); C('C5', 'Qty'); C('D5', 'Rate'); C('E5', 'Amount');
+
+    // Items
+    let row = 6;
+    items.forEach((item, idx) => {
+      ws[`A${row}`] = { v: idx+1, t:'n' };
+      ws[`B${row}`] = { v: item.product, t:'s' };
+      ws[`C${row}`] = { v: parseFloat(item.finalQty || item.qty) || 0, t:'n' };
+      ws[`D${row}`] = { v: parseFloat(item.price) || 0, t:'n' };
+      ws[`E${row}`] = { f: `C${row}*D${row}`, t:'n' };
+      row++;
+    });
+
+    // Empty buffer
+    const emptyEnd = row + 5;
+    for (let r = row; r <= emptyEnd; r++) {
+      ['A','B','C','D','E'].forEach(col => { ws[`${col}${r}`] = { v:'', t:'s' }; });
+      row++;
+    }
+
+    // Grand total
+    C(`A${row}`, 'Note :');
+    merges.push({ s:{r:row-1,c:0}, e:{r:row-1,c:2} });
+    C(`D${row}`, 'Grand Total');
+    ws[`E${row}`] = { f: `SUM(E6:E${row-1})`, t:'n' };
+
+    ws['!ref'] = `A1:E${row}`;
+    ws['!merges'] = merges;
+    ws['!cols'] = [{wch:7},{wch:50},{wch:10},{wch:10},{wch:12}];
+
+    // Sheet name: party name truncated to 31 chars (Excel limit), make unique
+    let sheetName = order.party.replace(/[\\\/\?\*\[\]:]/g,'').slice(0,28);
+    if (orderIdx > 0) sheetName = sheetName.slice(0,25) + '_' + (orderIdx+1);
+    XLSX.utils.book_append_sheet(WB, ws, sheetName);
+  });
+
+  const today = new Date().toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}).replace(/\//g,'-');
+  XLSX.writeFile(WB, `Charbhuja_Priced_Orders_${today}.xlsx`);
+  showToast(`✓ ${pricedOrders.length} orders exported to Excel`);
+}
+
+// ─── SLIP GENERATOR (shared by single + bulk print) ─────────────────────────
+function buildSlipHTML(order) {
+  const items = (order.items||[]).filter(i => !i.deleted);
+  const dateStr = order.date ? new Date(order.date).toLocaleDateString('en-IN',{day:'2-digit',month:'2-digit',year:'numeric'}) : '';
+  const hasRates = items.some(i => parseFloat(i.price) > 0);
+  const total = items.reduce((s,i) => s+(parseFloat(i.price)||0)*(parseInt(i.finalQty||i.qty)||0), 0);
+
+  const rows = items.map((item, idx) => {
+    const qty  = (item.finalQty || item.qty) || '';
+    const rate = parseFloat(item.price)||0;
+    const amt  = (rate > 0 && qty !== '') ? (rate * qty).toFixed(2) : '';
+    return `<tr>
+      <td style="text-align:center;width:18px">${idx+1}</td>
+      <td>${item.product}${item.note ? `<div style="font-size:8px;color:#666;font-style:italic">↳ ${item.note}</div>` : ''}</td>
+      <td style="text-align:center;width:28px">${qty}</td>
+      <td style="text-align:right;width:40px">${rate > 0 ? rate : ''}</td>
+      <td style="text-align:right;width:46px">${amt}</td>
+    </tr>`;
+  }).join('');
+
+  return `
+    <div class="slip">
+      <div class="slip-header">
+        <div class="slip-co">CHARBHUJA TRADERS</div>
+        <div class="slip-meta">
+          <span class="slip-party">${order.party}</span>
+          <span>${dateStr} &nbsp;·&nbsp; #${String(order.id).slice(-5)}</span>
+        </div>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th><th style="text-align:left">Product</th>
+            <th>Qty</th><th style="text-align:right">Rate</th><th style="text-align:right">Amt</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+        ${hasRates ? `<tfoot><tr>
+          <td colspan="4" style="text-align:right;font-weight:700">Total</td>
+          <td style="text-align:right;font-weight:700">₹${total.toFixed(2)}</td>
+        </tr></tfoot>` : ''}
+      </table>
+      ${order.note ? `<div class="slip-note">Note: ${order.note}</div>` : ''}
+      <div class="slip-sign">
+        <span>Prepared: _______</span><span>Checked: _______</span>
+      </div>
+    </div>`;
+}
+
+const SLIP_CSS = `
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, sans-serif; font-size: 9px; background: #fff; }
+  .page {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-auto-rows: min-content;
+    width: 210mm;
+    page-break-after: always;
+    align-content: start;
+  }
+  .slip {
+    border: 1px solid #999;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .slip-header { border-bottom: 1px solid #ccc; padding-bottom: 4px; margin-bottom: 4px; }
+  .slip-co { font-size: 11px; font-weight: 700; letter-spacing: 0.5px; }
+  .slip-meta { display: flex; justify-content: space-between; align-items: baseline; margin-top: 2px; font-size: 8px; color: #444; }
+  .slip-party { font-size: 10px; font-weight: 700; color: #000; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 2px 3px; border-bottom: 1px solid #eee; font-size: 8.5px; vertical-align: top; }
+  th { background: #f0f0f0; font-weight: 700; font-size: 8px; border-bottom: 1px solid #bbb; }
+  tfoot td { border-top: 1px solid #999; border-bottom: none; background: #f9f9f9; }
+  .slip-note { font-size: 8px; color: #555; font-style: italic; border-top: 1px dashed #ccc; padding-top: 3px; margin-top: 4px; }
+  .slip-sign { display: flex; justify-content: space-between; font-size: 7.5px; color: #888; margin-top: 8px; padding-top: 4px; border-top: 1px solid #eee; }
+  @media print {
+    .no-print { display: none !important; }
+    body { margin: 0; }
+    .page { margin: 0; }
+  }
+`;
+
 function printOrder(orderId) {
   const order = orders.find(o => String(o.id) === String(orderId));
   if (!order) return;
-  const items = (order.items||[]).filter(i=>!i.deleted);
-  const rows = items.map(i => '<tr><td>'+i.product+'</td><td style="text-align:right">'+(i.finalQty||i.qty)+'</td><td style="text-align:right">'+(i.price ? '₹'+i.price : '—')+'</td></tr>').join('');
-  const total = items.reduce((s,i) => s + (parseFloat(i.price)||0) * (parseInt(i.finalQty||i.qty)||0), 0);
   const win = window.open('','_blank');
-  const html2 = '<!DOCTYPE html><html><head><title>Order #'+order.id+'</title>'
-    +'<style>body{font-family:sans-serif;padding:24px;max-width:500px;margin:0 auto}'
-    +'h2{margin-bottom:4px}p{color:#666;font-size:13px;margin-bottom:16px}'
-    +'table{width:100%;border-collapse:collapse}th,td{padding:8px;border:1px solid #ddd;font-size:13px}'
-    +'th{background:#f5f5f5;font-weight:600}tfoot td{font-weight:600;background:#f5f5f5}'
-    +'@media print{button{display:none}}</style></head>'
-    +'<body>'
-    +'<h2>'+order.party+'</h2>'
-    +'<p>Order #'+order.id+' &middot; '+(order.date ? new Date(order.date).toLocaleDateString('en-IN') : '')+' &middot; '+order.status+'</p>'
-    +'<table><thead><tr><th>Product</th><th style="text-align:right">Qty</th><th style="text-align:right">Price</th></tr></thead>'
-    +'<tbody>'+rows+'</tbody>'
-    +'<tfoot><tr><td colspan="2">Total</td><td style="text-align:right">&#8377;'+total.toFixed(2)+'</td></tr></tfoot>'
-    +'</table>'
-    +'<p style="margin-top:16px;font-size:11px;color:#999">Printed from Spares Portal</p>'
-    +'<button onclick="window.print()" style="margin-top:12px;padding:8px 16px;background:#1a6b3c;color:white;border:none;border-radius:6px;cursor:pointer;font-size:13px">Print</button>'
-    +'</body></html>';
-  win.document.write(html2);
+  win.document.write(`<!DOCTYPE html><html><head><title>${order.party}</title>
+    <style>${SLIP_CSS}</style></head><body>
+    <div class="no-print" style="padding:12px;text-align:center;">
+      <button onclick="window.print()" style="padding:8px 24px;background:#1a6b3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">🖨️ Print</button>
+    </div>
+    <div class="page">
+      ${buildSlipHTML(order)}
+    </div>
+  </body></html>`);
+  win.document.close();
+}
+
+function bulkPrintOrders() {
+  // Get currently visible orders (respects active filter)
+  let visible = [...orders];
+  if (currentFilter !== 'all') visible = visible.filter(o => o.status === currentFilter);
+  if (currentSearch) visible = visible.filter(o => o.party.toLowerCase().includes(currentSearch.toLowerCase()));
+  if (ROLE === 'accountant') visible = visible.filter(o => ['priced','dispatched','billed'].includes(o.status));
+  visible.sort((a,b) => b.id - a.id);
+
+  if (visible.length === 0) { showToast('No orders to print'); return; }
+
+  // Pack 4 slips per A4 page
+  const pages = [];
+  for (let i = 0; i < visible.length; i += 4) {
+    const chunk = visible.slice(i, i+4);
+    // Pad to 4 with empty divs if needed
+    while (chunk.length < 4) chunk.push(null);
+    pages.push(chunk);
+  }
+
+  const pagesHTML = pages.map(chunk =>
+    `<div class="page">${chunk.map(o => o ? buildSlipHTML(o) : '<div class="slip"></div>').join('')}</div>`
+  ).join('');
+
+  const win = window.open('','_blank');
+  win.document.write(`<!DOCTYPE html><html><head><title>Charbhuja Traders — Bulk Print</title>
+    <style>${SLIP_CSS}</style></head><body>
+    <div class="no-print" style="padding:12px;text-align:center;font-family:sans-serif;">
+      <strong>${visible.length} orders</strong> · 4 slips per A4 sheet (${pages.length} page${pages.length>1?'s':''})
+      &nbsp;&nbsp;
+      <button onclick="window.print()" style="padding:8px 24px;background:#1a6b3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">🖨️ Print All</button>
+    </div>
+    ${pagesHTML}
+  </body></html>`);
   win.document.close();
 }
 
@@ -1268,7 +1844,7 @@ async function confirmAddParty() {
   document.getElementById('addPartyModal').remove();
 
   if (!DEMO_MODE) {
-    try { await api({action:'addParty', name, mobile}); } catch(e) {}
+    gsEnsureParty(name).catch(e => {});
   }
   showToast(`"${name}" added${mobile ? ' with mobile' : ''}`);
 }
@@ -1280,15 +1856,35 @@ function searchProducts(q) {
   const list = document.getElementById('productList');
   if (!q || q.length < 1) { list.classList.add('hidden'); return; }
   const matches = products.filter(p => p.toLowerCase().includes(q.toLowerCase()));
-  if (matches.length === 0) { list.innerHTML = '<div style="padding:10px 12px;font-size:13px;color:var(--text3)">No products found</div>'; list.classList.remove('hidden'); return; }
-  list.innerHTML = matches.slice(0,10).map(p =>
+  let html = matches.slice(0,12).map(p =>
     `<div class="autocomplete-item" onmousedown="addItem('${p.replace(/'/g,"\\'")}')"><span>${p}</span></div>`
   ).join('');
+  // Always show "Add new product" option if no exact match
+  if (!matches.find(p => p.toLowerCase() === q.toLowerCase())) {
+    html += `<div class="autocomplete-add" onmousedown="addNewProduct('${q.replace(/'/g,"\\'")}')">+ Add "${q}" as new product</div>`;
+  }
+  if (!html) html = '<div style="padding:10px 12px;font-size:13px;color:var(--text3)">No products found</div>';
+  list.innerHTML = html;
   list.classList.remove('hidden');
 }
 
 function hideProdList() {
   prodBlurTimer = setTimeout(() => document.getElementById('productList').classList.add('hidden'), 200);
+}
+
+async function addNewProduct(name) {
+  if (!name) return;
+  products.push(name);
+  localStorage.setItem('spares_products', JSON.stringify(products));
+  document.getElementById('productList').classList.add('hidden');
+  document.getElementById('productSearch').value = '';
+  newOrderItems.push({product: name, qty:'', price:''});
+  renderNewItems();
+  document.getElementById('productSearch').focus();
+  if (!DEMO_MODE) {
+    try { await api('addProduct', {name}); } catch(e) {}
+  }
+  showToast('"' + name + '" added to products ✓');
 }
 
 function addItem(product) {
@@ -1298,7 +1894,7 @@ function addItem(product) {
     document.getElementById('productList').classList.add('hidden');
     return;
   }
-  newOrderItems.push({product, qty:1, price:''});
+  newOrderItems.push({product, qty:'', price:'', note:''});
   document.getElementById('productSearch').value = '';
   document.getElementById('productList').classList.add('hidden');
   renderNewItems();
@@ -1323,8 +1919,8 @@ function renderNewItems() {
     <tr>
       <td><div class="product-name">${item.product}</div></td>
       <td style="text-align:right">
-        <input class="inline-input" type="number" value="${item.qty}" min="1"
-          onchange="newOrderItems[${idx}].qty=parseInt(this.value)||1" />
+        <input class="inline-input" type="number" value="${item.qty}" min="1" placeholder="Qty"
+          onchange="newOrderItems[${idx}].qty=this.value" />
       </td>
       <td style="text-align:right">
         <input class="inline-input" type="number" value="${item.price}" placeholder="0" min="0"
@@ -1332,6 +1928,17 @@ function renderNewItems() {
       </td>
       <td>
         <button class="btn-icon" style="color:var(--danger)" onclick="removeNewItem(${idx})">✕</button>
+      </td>
+    </tr>
+    <tr class="item-note-row">
+      <td colspan="4" style="padding:0 4px 10px 4px;">
+        <input
+          class="item-note-input"
+          type="text"
+          placeholder="Note for this item (optional)…"
+          value="${item.note||''}"
+          oninput="newOrderItems[${idx}].note=this.value"
+        />
       </td>
     </tr>
   `).join('');
@@ -1355,20 +1962,23 @@ async function submitOrder() {
     note: document.getElementById('orderNote').value.trim(),
     createdBy: ROLE,
     items: newOrderItems.map(i => ({
-      product: i.product, qty: parseInt(i.qty)||1,
-      finalQty: parseInt(i.qty)||1, price: i.price||'',
+      product: i.product, qty: parseInt(i.qty)||0,
+      finalQty: parseInt(i.qty)||0, price: i.price||'',
+      note: i.note||'',
       deleted: false
     }))
   };
   orders.push(order);
-
-  if (DEMO_MODE) {
-    saveDemo();
-  } else {
-    try { await api({action:'saveOrder', ...order}); } catch(e) { showToast('Saved locally (sheet unreachable)'); }
+  saveDemo();
+  try {
+    await gsSaveOrder(order);
+    showToast('Order submitted ✓');
+  } catch(e) {
+    showToast('⚠️ Sheet error: ' + e.message);
+    console.error('Save failed:', e);
   }
 
-  showToast('Order submitted!');
+  // Go back to orders list
   showTab('orders');
   renderOrders();
 }
