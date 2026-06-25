@@ -1335,7 +1335,7 @@ function openOrder(id) {
       qtyCell = `<div class="qty-edit-wrap">
         ${item.finalQty != item.qty ? `<span class="strikethrough">${item.qty}</span>` : ''}
         <input class="inline-input" type="number" value="${item.finalQty||item.qty}" min="0"
-          onchange="updateItemQty('${id}','${item.product}',this.value)" />
+          onchange="updateItemQty('${id}','${safeProduct}',this.value)" />
       </div>`;
     } else {
       qtyCell = `<span>
@@ -1348,15 +1348,16 @@ function openOrder(id) {
     const priceEditable = canPrice || canEditAny;
     if (priceEditable) {
       priceCell = `<input class="inline-input" type="number" value="${item.price||''}" placeholder="0" min="0"
-        onchange="updateItemPrice('${id}','${item.product}',this.value)" />`;
+        onchange="updateItemPrice('${id}','${safeProduct}',this.value)" />`;
     } else {
       priceCell = item.price ? `<span class="text-mono">₹${item.price}</span>` : `<span style="color:var(--text3)">—</span>`;
     }
 
+    const safeProduct = item.product ? item.product.replace(/'/g, "\'") : '';
     body += `<tr id="row_${idx}">
       <td><div class="product-name">${item.product}</div></td>
       <td style="text-align:right">${qtyCell}</td>
-      <td style="text-align:right">${priceCell}</td>${(canEdit || canEditAny) ? `<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem('${id}','${item.product}')">✕</button></td>` : ''}
+      <td style="text-align:right">${priceCell}</td>${(canEdit || canEditAny) ? `<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem('${id}','${safeProduct}')">✕</button></td>` : ''}
     </tr>${item.note ? `<tr class="item-note-row"><td colspan="4" style="padding:2px 6px 10px 6px;"><span class="item-note-display">📝 ${item.note}</span></td></tr>` : ''}`;
   });
 
