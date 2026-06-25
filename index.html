@@ -713,7 +713,7 @@ function doGet(e){return doPost(e);}</pre>
   <div class="header">
     <div class="header-brand">Spares <span>Portal</span></div>
     <div style="display:flex;align-items:center;gap:8px;">
-      <button onclick="loadData()" title="Sync now" style="background:none;border:none;cursor:pointer;font-size:16px;padding:4px;color:var(--text2);line-height:1;" id="syncBtn">⟳</button>
+      <button onclick="loadData()" title="Sync now" style="background:none;border:none;cursor:pointer;font-size:16px;padding:4px;color:var(--text2);line-height:1;" id="syncBtn" onclick="refreshOrders()" title="Sync latest orders">⟳</button>
       <div class="role-badge" onclick="showRolePicker()" title="Switch role">
         <span id="roleIcon"></span>
         <span id="roleName"></span>
@@ -1248,13 +1248,15 @@ function renderOrders() {
 
   list.innerHTML = filtered.map(o => {
     const itemCount = o.items ? o.items.filter(i => !i.deleted).length : 0;
+    const orderTotal = o.items ? o.items.filter(i => !i.deleted).reduce((s,i) => s + (parseFloat(i.price)||0) * (parseInt(i.finalQty||i.qty)||0), 0) : 0;
     const statusHtml = `<span class="status status-${o.status}">${o.status}</span>`;
     const dateStr = o.date ? new Date(o.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
+    const totalStr = orderTotal > 0 ? `₹${orderTotal.toLocaleString('en-IN')}` : '';
     return `<div class="order-item" onclick="openOrder('${o.id}')">
       <div>
-        <div class="order-number">#${o.id}</div>
+        <div class="order-number">#${String(o.id).slice(-5)} · ${dateStr}</div>
         <div class="order-party">${o.party}</div>
-        <div class="order-meta">${itemCount} item${itemCount!==1?'s':''} · ${dateStr}</div>
+        <div class="order-meta">${itemCount} item${itemCount!==1?'s':''} ${totalStr ? '· <strong>' + totalStr + '</strong>' : ''}</div>
       </div>
       <div class="order-right">
         ${statusHtml}
@@ -1374,8 +1376,9 @@ function openOrder(id) {
   // Action buttons
   body += '<div class="action-bar" style="flex-wrap:wrap;gap:6px;">';
 
-  // Print button available to EVERYONE on ANY order
+  // Print + WhatsApp available to EVERYONE on ANY order
   body += `<button class="btn btn-sm btn-secondary" onclick="printOrder('${id}')">🖨️ Print</button>`;
+  body += `<button class="btn btn-sm btn-secondary" onclick="whatsappOrder('${id}')" style="background:#25D366;color:white;border-color:#25D366;">WhatsApp</button>`;
 
   if (ROLE === 'warehouse' || ROLE === 'admin') {
     if (order.status === 'pending') {
@@ -1451,6 +1454,40 @@ function deleteItem(orderId, product) {
   gsUpdateOrder(orderId, {items: order.items}).catch(e => showToast('Sheet sync error'));
   openOrder(orderId);
   showToast('Item removed');
+}
+
+function refreshOrders() {
+  const btn = document.getElementById('refreshBtn');
+  if (btn) { btn.textContent = '⟳'; btn.style.opacity = '0.5'; }
+  loadData().then(() => {
+    if (btn) { btn.textContent = '⟳'; btn.style.opacity = '1'; }
+    showToast('Orders synced ✓');
+  }).catch(() => {
+    if (btn) btn.style.opacity = '1';
+    showToast('Could not sync — check connection');
+  });
+}
+
+function whatsappOrder(orderId) {
+  const order = orders.find(o => String(o.id) === String(orderId));
+  if (!order) return;
+  const items = (order.items||[]).filter(i => !i.deleted);
+  const dateStr = order.date ? new Date(order.date).toLocaleDateString('en-IN') : '';
+  const total = items.reduce((s,i) => s+(parseFloat(i.price)||0)*(parseInt(i.finalQty||i.qty)||0), 0);
+
+  let msg = '*Charbhuja Traders*\n';
+  msg += `Order #${String(order.id).slice(-5)} · ${dateStr}\n`;
+  msg += `Party: *${order.party}*\n\n`;
+  items.forEach((item, idx) => {
+    const qty = item.finalQty || item.qty;
+    const price = item.price ? ` · ₹${item.price}` : '';
+    msg += `${idx+1}. ${item.product} — Qty: ${qty}${price}\n`;
+  });
+  if (total > 0) msg += `\n*Total: ₹${total.toLocaleString('en-IN')}*`;
+  if (order.note) msg += `\nNote: ${order.note}`;
+
+  const url = 'https://wa.me/?text=' + encodeURIComponent(msg);
+  window.open(url, '_blank');
 }
 
 function searchModalProducts(q, orderId) {
