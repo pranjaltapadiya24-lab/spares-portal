@@ -1326,39 +1326,50 @@ function openOrder(id) {
 
   items.filter(i => !i.deleted).forEach((item, idx) => {
     const canEdit = (ROLE === 'warehouse' || ROLE === 'admin') && (order.status === 'pending' || order.status === 'ready');
-      const canEditAny = ROLE === 'admin'; // admin can edit any order at any status
-      const canPrice = (ROLE === 'owner' || ROLE === 'admin') && (order.status === 'ready' || order.status === 'priced' || order.status === 'pending');
+    const canEditAny = ROLE === 'admin';
+    const canPrice = (ROLE === 'owner' || ROLE === 'admin') && (order.status === 'ready' || order.status === 'priced' || order.status === 'pending');
+
+    // Escape product name for use in onclick attributes
+    const escapedProduct = (item.product||'').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
 
     let qtyCell = '';
     const qtyEditable = canEdit || canEditAny;
     if (qtyEditable) {
-      qtyCell = `<div class="qty-edit-wrap">
-        ${item.finalQty != item.qty ? `<span class="strikethrough">${item.qty}</span>` : ''}
-        <input class="inline-input" type="number" value="${item.finalQty||item.qty}" min="0"
-          onchange="updateItemQty('${id}','${safeProduct}',this.value)" />
-      </div>`;
+      qtyCell = '<div class="qty-edit-wrap">'
+        + (item.finalQty != item.qty ? '<span class="strikethrough">'+item.qty+'</span>' : '')
+        + '<input class="inline-input" type="number" value="'+(item.finalQty||item.qty||0)+'" min="0"'
+        + ' onchange="updateItemQty(\''+id+'\',\''+escapedProduct+'\',this.value)" />'
+        + '</div>';
     } else {
-      qtyCell = `<span>
-        ${item.finalQty != item.qty ? `<span class="strikethrough text-sm">${item.qty}</span> ` : ''}
-        <strong>${item.finalQty||item.qty}</strong>
-      </span>`;
+      qtyCell = '<span>'
+        + (item.finalQty != item.qty ? '<span class="strikethrough text-sm">'+item.qty+'</span> ' : '')
+        + '<strong>'+(item.finalQty||item.qty)+'</strong>'
+        + '</span>';
     }
 
     let priceCell = '';
     const priceEditable = canPrice || canEditAny;
     if (priceEditable) {
-      priceCell = `<input class="inline-input" type="number" value="${item.price||''}" placeholder="0" min="0"
-        onchange="updateItemPrice('${id}','${safeProduct}',this.value)" />`;
+      priceCell = '<input class="inline-input" type="number" value="'+(item.price||'')+'" placeholder="0" min="0"'
+        + ' onchange="updateItemPrice(\''+id+'\',\''+escapedProduct+'\',this.value)" />';
     } else {
-      priceCell = item.price ? `<span class="text-mono">₹${item.price}</span>` : `<span style="color:var(--text3)">—</span>`;
+      priceCell = item.price ? '<span class="text-mono">₹'+item.price+'</span>' : '<span style="color:var(--text3)">—</span>';
     }
 
-    const safeProduct = item.product ? item.product.replace(/'/g, "\'") : '';
-    body += `<tr id="row_${idx}">
-      <td><div class="product-name">${item.product}</div></td>
-      <td style="text-align:right">${qtyCell}</td>
-      <td style="text-align:right">${priceCell}</td>${(canEdit || canEditAny) ? `<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem('${id}','${safeProduct}')">✕</button></td>` : ''}
-    </tr>${item.note ? `<tr class="item-note-row"><td colspan="4" style="padding:2px 6px 10px 6px;"><span class="item-note-display">📝 ${item.note}</span></td></tr>` : ''}`;
+    const deleteBtn = (canEdit || canEditAny)
+      ? '<td><button class="btn-icon" style="color:var(--danger)" onclick="deleteItem(\''+id+'\',\''+escapedProduct+'\')">✕</button></td>'
+      : '';
+
+    body += '<tr id="row_'+idx+'">'
+      + '<td><div class="product-name">'+(item.product||'')+'</div></td>'
+      + '<td style="text-align:right">'+qtyCell+'</td>'
+      + '<td style="text-align:right">'+priceCell+'</td>'
+      + deleteBtn
+      + '</tr>';
+
+    if (item.note) {
+      body += '<tr class="item-note-row"><td colspan="4" style="padding:2px 6px 10px 6px;"><span class="item-note-display">📝 '+item.note+'</span></td></tr>';
+    }
   });
 
   body += '</tbody></table>';
