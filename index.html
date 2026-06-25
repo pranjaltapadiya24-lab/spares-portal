@@ -611,7 +611,7 @@
     for(var i=1;i<od.length;i++){
       var items=[];
       for(var j=1;j<id2.length;j++){if(id2[j][0]==od[i][0])items.push({product:id2[j][1],qty:id2[j][2],finalQty:id2[j][3],price:id2[j][4],photoURL:id2[j][5],deleted:id2[j][6]==='YES'});}
-      orders.push({id:od[i][0],party:od[i][1],date:od[i][2],status:od[i][3],note:od[i][4],createdBy:od[i][5],items:items});
+      orders.push({id:od[i][0],party:od[i][1],date:od[i][2],status:od[i][3]||'pending',note:od[i][4],createdBy:od[i][5],items:items});
     }
     return ContentService.createTextOutput(JSON.stringify(orders)).setMimeType(ContentService.MimeType.JSON);
   }
@@ -1249,7 +1249,8 @@ function renderOrders() {
   list.innerHTML = filtered.map(o => {
     const itemCount = o.items ? o.items.filter(i => !i.deleted).length : 0;
     const orderTotal = o.items ? o.items.filter(i => !i.deleted).reduce((s,i) => s + (parseFloat(i.price)||0) * (parseInt(i.finalQty||i.qty)||0), 0) : 0;
-    const statusHtml = `<span class="status status-${o.status}">${o.status}</span>`;
+    const safeStatus = o.status || 'pending';
+    const statusHtml = `<span class="status status-${safeStatus}">${safeStatus}</span>`;
     const dateStr = o.date ? new Date(o.date).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) : '';
     const totalStr = orderTotal > 0 ? `₹${orderTotal.toLocaleString('en-IN')}` : '';
     return `<div class="order-item" onclick="openOrder('${o.id}')">
@@ -1302,7 +1303,8 @@ function openOrder(id) {
 
   document.getElementById('modalPartyName').textContent = order.party;
   document.getElementById('modalOrderId').textContent = '#' + order.id + (order.date ? ' · ' + new Date(order.date).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) : '');
-  document.getElementById('modalStatus').innerHTML = `<span class="status status-${order.status}">${order.status}</span>`;
+  const ms = order.status || 'pending';
+  document.getElementById('modalStatus').innerHTML = `<span class="status status-${ms}">${ms}</span>`;
 
   const items = order.items || [];
   let body = '';
