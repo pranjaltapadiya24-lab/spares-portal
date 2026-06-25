@@ -1299,6 +1299,8 @@ function searchOrders(q) {
 function openOrder(id) {
   const order = orders.find(o => String(o.id) === String(id));
   if (!order) return;
+  // Normalize status - never let it be blank
+  if (!order.status) order.status = 'pending';
   currentOrderId = id;
 
   document.getElementById('modalPartyName').textContent = order.party;
@@ -1318,7 +1320,7 @@ function openOrder(id) {
     <th>Product</th>
     <th style="text-align:right">Qty</th>
     <th style="text-align:right">Price</th>
-    ${(ROLE==='warehouse'||ROLE==='admin') && order.status==='pending' ? '<th></th>' : ''}
+    ${(ROLE==='warehouse'||ROLE==='admin') && (order.status==='pending'||order.status==='ready') ? '<th></th>' : ''}
   </tr></thead><tbody id="modalItemsBody">`;
 
   items.filter(i => !i.deleted).forEach((item, idx) => {
