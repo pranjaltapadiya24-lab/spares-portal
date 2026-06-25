@@ -1747,144 +1747,144 @@ function buildSlipHTML(order) {
   const total = items.reduce((s,i) => s+(parseFloat(i.price)||0)*(parseInt(i.finalQty||i.qty)||0), 0);
 
   const TOTAL_ROWS = 15;
-  const rows = items.map((item, idx) => {
+  let rows = '';
+  items.forEach((item, idx) => {
     const qty  = (item.finalQty || item.qty) || '';
     const rate = parseFloat(item.price)||0;
     const amt  = (rate > 0 && qty !== '') ? (rate * qty).toFixed(2) : '';
-    return `<tr>
-      <td class="num" style="width:18px">${idx+1}</td>
-      <td>${item.product}</td>
-      <td class="c" style="width:38px">${qty}</td>
-      <td class="r" style="width:52px">${rate > 0 ? rate : ''}</td>
-      <td class="r" style="width:62px">${amt}</td>
-    </tr>`;
-  }).join('');
+    rows += '<tr>'
+      + '<td class="num">'+(idx+1)+'</td>'
+      + '<td>'+item.product+'</td>'
+      + '<td class="c">'+qty+'</td>'
+      + '<td class="r">'+(rate > 0 ? rate : '')+'</td>'
+      + '<td class="r">'+amt+'</td>'
+      + '</tr>';
+  });
 
-  let emptyRows = '';
   for (let i = items.length; i < TOTAL_ROWS; i++) {
-    emptyRows += `<tr>
-      <td class="num">${i+1}</td>
-      <td></td><td></td><td></td><td></td>
-    </tr>`;
+    rows += '<tr>'
+      + '<td class="num">'+(i+1)+'</td>'
+      + '<td></td><td></td><td></td><td></td>'
+      + '</tr>';
   }
 
-  return `<div class="slip">
-    <div class="slip-header">
-      <div class="slip-party">${order.party}</div>
-      <div class="slip-meta"><div>${dateStr}</div><div>#${String(order.id).slice(-5)}</div></div>
-    </div>
-    ${order.note ? `<div class="slip-note">Note: ${order.note}</div>` : ''}
-    <table>
-      <thead><tr>
-        <th style="width:18px">#</th>
-        <th>Product Name</th>
-        <th class="c" style="width:38px">Qty</th>
-        <th class="r" style="width:52px">Rate</th>
-        <th class="r" style="width:62px">Total</th>
-      </tr></thead>
-      <tbody>${rows}${emptyRows}</tbody>
-      ${hasRates ? `<tfoot><tr>
-        <td colspan="4" style="text-align:right;padding-right:6px">Total Amount</td>
-        <td>&#8377;${total.toFixed(2)}</td>
-      </tr></tfoot>` : ''}
-    </table>
-    <div class="slip-footer">
-      <span>Charbhuja Traders</span>
-      <span>Prepared by: _______________</span>
-      <span>Received by: _______________</span>
-    </div>
-  </div>`;
+  return '<div class="slip-header">'
+    + '<div class="slip-party">'+order.party+'</div>'
+    + '<div class="slip-meta"><div>'+dateStr+'</div><div>#'+String(order.id).slice(-5)+'</div></div>'
+    + '</div>'
+    + (order.note ? '<div class="slip-note">Note: '+order.note+'</div>' : '')
+    + '<table>'
+    + '<thead><tr>'
+    + '<th style="width:8mm">#</th>'
+    + '<th>Product Name</th>'
+    + '<th class="c" style="width:14mm">Qty</th>'
+    + '<th class="r" style="width:18mm">Rate</th>'
+    + '<th class="r" style="width:20mm">Total</th>'
+    + '</tr></thead>'
+    + '<tbody>'+rows+'</tbody>'
+    + (hasRates ? '<tfoot><tr><td colspan="4" style="text-align:right">Total</td><td>&#8377;'+total.toFixed(2)+'</td></tr></tfoot>' : '')
+    + '</table>'
+    + '<div class="slip-footer">'
+    + '<span>Charbhuja Traders</span>'
+    + '<span>Prepared: _______________</span>'
+    + '<span>Received: _______________</span>'
+    + '</div>';
 }
 
 const SLIP_CSS = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: Arial, sans-serif; background: #fff; font-size: 13px; }
+  html, body { width: 100%; height: 100%; background: #fff; font-family: Arial, sans-serif; }
 
   @media print {
-    @page { size: A5 landscape; margin: 5mm 7mm; }
+    @page { size: A5 landscape; margin: 0; }
     .no-print { display: none !important; }
-    body { margin: 0; }
-    .page { width: 100%; height: 100%; }
-    table { height: calc(100% - 28mm); }
-    tbody { height: 100%; }
-    tbody tr { height: auto; }
+    html, body { width: 148mm; height: 210mm; }
+    .page { width: 148mm; height: 210mm; padding: 4mm 6mm; }
+  }
+
+  .no-print {
+    padding: 10px;
+    text-align: center;
+    background: #f5f5f5;
+    border-bottom: 1px solid #ddd;
   }
 
   .page {
-    width: 205mm;
-    height: 143mm;
-    padding: 5mm 7mm;
-    margin: 0 auto;
+    width: 210mm;
+    height: 148mm;
+    padding: 4mm 6mm;
     display: flex;
     flex-direction: column;
+    background: #fff;
   }
 
-  .slip { display: flex; flex-direction: column; height: 100%; }
-
+  /* Party name header — compact */
   .slip-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end;
-    border-bottom: 1.5px solid #000;
-    padding-bottom: 3px;
-    margin-bottom: 3px;
+    align-items: center;
+    padding-bottom: 2mm;
+    margin-bottom: 2mm;
+    border-bottom: 0.8px solid #000;
     flex-shrink: 0;
   }
-  .slip-party { font-size: 18px; font-weight: 800; }
-  .slip-meta { font-size: 12px; color: #444; text-align: right; line-height: 1.5; }
+  .slip-party { font-size: 15px; font-weight: 800; }
+  .slip-meta { font-size: 10px; color: #555; text-align: right; line-height: 1.4; }
+  .slip-note { font-size: 10px; color: #555; font-style: italic; flex-shrink: 0; margin-bottom: 1mm; }
 
-  .slip-note {
-    font-size: 12px; color: #555; font-style: italic;
-    margin-bottom: 3px; flex-shrink: 0;
-  }
-
+  /* Table fills remaining height */
   table {
     width: 100%;
     border-collapse: collapse;
     flex: 1;
     table-layout: fixed;
   }
+
   thead th {
-    border-top: 1px solid #000;
-    border-bottom: 1px solid #000;
-    padding: 3px 4px;
-    font-size: 12px;
+    font-size: 10px;
     font-weight: 700;
+    padding: 1mm 1mm;
+    border-top: 0.8px solid #000;
+    border-bottom: 0.8px solid #000;
     text-align: left;
     background: #fff;
   }
   thead th.r { text-align: right; }
   thead th.c { text-align: center; }
 
-  tbody { }
-  tbody tr { border-bottom: 1px solid #ccc; }
-  tbody tr td {
-    padding: 0px 4px;
-    font-size: 13px;
+  /* Each row gets equal height to fill page */
+  tbody tr {
+    border-bottom: 0.5px solid #bbb;
+    height: calc((148mm - 28mm) / 15);
+  }
+  tbody td {
+    font-size: 11px;
+    padding: 0 1mm;
     vertical-align: middle;
-    height: 9mm;
+    overflow: hidden;
+    white-space: nowrap;
   }
   tbody td.r { text-align: right; }
   tbody td.c { text-align: center; }
-  tbody td.num { color: #888; font-size: 11px; }
+  tbody td.num { color: #aaa; font-size: 9px; width: 8mm; }
 
-  tfoot tr { border-top: 2px solid #000; }
+  tfoot tr { border-top: 0.8px solid #000; }
   tfoot td {
-    padding: 3px 4px;
-    font-size: 14px;
-    font-weight: 800;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 1mm 1mm;
     text-align: right;
     flex-shrink: 0;
   }
 
   .slip-footer {
-    margin-top: 4px;
     display: flex;
     justify-content: space-between;
-    font-size: 11px;
-    color: #888;
-    border-top: 1px solid #ddd;
-    padding-top: 3px;
+    font-size: 9px;
+    color: #aaa;
+    border-top: 0.5px solid #ddd;
+    padding-top: 1mm;
+    margin-top: 1mm;
     flex-shrink: 0;
   }
 `;
@@ -1893,15 +1893,15 @@ function printOrder(orderId) {
   const order = orders.find(o => String(o.id) === String(orderId));
   if (!order) return;
   const win = window.open('','_blank');
-  win.document.write(`<!DOCTYPE html><html><head><title>${order.party}</title>
-    <style>${SLIP_CSS}</style></head><body>
-    <div class="no-print" style="padding:12px;text-align:center;">
-      <button onclick="window.print()" style="padding:8px 24px;background:#1a6b3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">🖨️ Print</button>
-    </div>
-    <div class="page">
-      ${buildSlipHTML(order)}
-    </div>
-  </body></html>`);
+  win.document.write(
+    '<!DOCTYPE html><html><head><title>'+order.party+'</title>'
+    + '<style>'+SLIP_CSS+'</style></head><body>'
+    + '<div class="no-print">'
+    + '<button onclick="window.print()" style="padding:8px 24px;background:#1a6b3c;color:#fff;border:none;border-radius:6px;cursor:pointer;font-size:13px;font-weight:600;">🖨️ Print</button>'
+    + '</div>'
+    + '<div class="page">'+buildSlipHTML(order)+'</div>'
+    + '</body></html>'
+  );
   win.document.close();
 }
 
